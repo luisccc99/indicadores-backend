@@ -5,8 +5,10 @@ const { getImagePathLocation } = require('../utils/stringFormat');
 
 const getTemas = async (req, res, next) => {
   try {
-    const temas = await temaService.getTemas();
-    return res.status(200).json({ data: [...temas] });
+    const { perPage, page, ...otherParams } = req.matchedData;
+    const { temas, total } = await temaService.getAllTemas(page, perPage, otherParams);
+
+    return res.status(200).json({ data: temas, total, totalPages: Math.ceil(total / perPage) });
   } catch (err) {
     next(err);
   }
