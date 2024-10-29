@@ -34,13 +34,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'No aplica'
     },
 
-    idUnidad: {
-      type: DataTypes.INTEGER,
+    unidadMedida: {
+      type: DataTypes.STRING,
       allowNull: false,
-      references: {
-        model: 'CatalogoDetails',
-        key: 'id'
-      }
+      defaultValue: ''
     },
 
     // TODO: Add migration to allow null years
