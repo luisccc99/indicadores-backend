@@ -72,7 +72,7 @@ const sortValidationRules = () => [
 ];
 
 const createIndicadorValidationRules = () => [
-    body(['nombre', 'codigo', 'definicion', 'ultimoValorDisponible'])
+    body(['nombre', 'definicion', 'ultimoValorDisponible'])
         .exists()
         .trim(),
 

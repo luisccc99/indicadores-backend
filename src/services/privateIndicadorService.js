@@ -36,7 +36,7 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
         limit: perPage,
         offset: offset !== null ? offset : (page - 1) * perPage,
         attributes: [
-            'id', 'nombre', 'codigo', 'activo', 'tendenciaActual', 'ultimoValorDisponible',
+            'id', 'nombre', 'activo', 'tendenciaActual', 'ultimoValorDisponible',
             'adornment', 'unidadMedida', 'anioUltimoValorDisponible', 'updatedAt', 'createdAt',
             'createdBy', 'updatedBy', 'owner', 'observaciones', 'periodicidad'
         ],
