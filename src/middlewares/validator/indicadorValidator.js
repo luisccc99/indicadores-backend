@@ -115,7 +115,7 @@ const createIndicadorValidationRules = () => [
 
     body(['observaciones', 'formula.descripcion', 'historicos.*.fuente',
         'formula.variables.*.descripcion', 'formula.variables.*.nombre',
-        'mapa.ubicacion', 'fuente'])
+        'mapa.ubicacion', 'fuente', 'adornment'])
         .optional()
         .trim(),
 
