@@ -11,6 +11,11 @@ const relationAssignValidationRules = () => [
     body('ids.*').isInt().toInt(),
 ]
 
+const assignationValidationRules = () => [
+    body('indicadores.*').isInt().toInt(),
+    body('usuarios.*').isInt().toInt(),
+]
+
 const userRelationAssignationValidationRules = () => [
     query('ids.*').isInt().toInt(),
 ]
@@ -57,4 +62,5 @@ module.exports = {
     userRelationAssignationValidationRules,
     idValidation,
     changeOwnerValidationRules,
+    assignationValidationRules,
 }

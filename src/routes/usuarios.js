@@ -6,8 +6,8 @@ const { getUsers,
   createUser,
   getUserFromId,
   editUser,
-  editUserStatus, 
-  getUserStats} = require('../controllers/usuarioController');
+  editUserStatus,
+  getUserStats } = require('../controllers/usuarioController');
 const { verifyJWT, verifyUserHasRoles, verifyUserIsActive } = require('../middlewares/auth');
 const { uploadImage } = require('../middlewares/fileUpload');
 
@@ -159,6 +159,7 @@ router.get(
   verifyUserHasRoles(['ADMIN', 'USER']),
   paginationValidationRules(),
   query('searchQuery'),
+  query('activo'),
   validate,
   getUsers
 );

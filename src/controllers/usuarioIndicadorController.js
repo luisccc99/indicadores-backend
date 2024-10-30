@@ -62,6 +62,27 @@ const createRelationUI = async (req, res, next) => {
     return 1;
 };
 
+const createRelation = async (req, res, next) => {
+    const { indicadores, usuarios } = req.matchedData;
+
+    const updatedBy = req.sub;
+    const createdBy = req.sub;
+
+    try {
+        await UsuarioIndicadorService.createRelation(usuarios, indicadores, {
+            fechaDesde: null,
+            fechaHasta: null,
+            updatedBy,
+            createdBy,
+            expires: 'NO',
+            activo: 'SI'
+        });
+        return res.sendStatus(201);
+    } catch (err) {
+        next(err);
+    }
+}
+
 const changeOwner = async (req, res, next) => {
     const { idUsuario, idIndicador } = req.matchedData;
     const updatedBy = req.sub;
@@ -168,4 +189,5 @@ module.exports = {
     deleteRelation,
     updateRelation,
     changeOwner,
+    createRelation,
 }

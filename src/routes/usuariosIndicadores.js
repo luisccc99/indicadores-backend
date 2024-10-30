@@ -14,6 +14,7 @@ const {
     filterRelationValidationRules,
     userRelationAssignationValidationRules,
     changeOwnerValidationRules,
+    assignationValidationRules,
 } = require('../middlewares/validator/usuarioIndicadorValidator')
 
 const { verifyJWT, verifyUserIsActive, verifyUserHasRoles } = require('../middlewares/auth');
@@ -24,7 +25,8 @@ const {
     getUsuarios,
     deleteRelation,
     updateRelation,
-    changeOwner
+    changeOwner,
+    createRelation
 } = require('../controllers/usuarioIndicadorController');
 
 
@@ -161,6 +163,15 @@ router.post('/create/:idIndicador',
     validate,
     createRelationUI,
 );
+
+router.post('/create',
+    verifyJWT,
+    verifyUserIsActive,
+    verifyUserHasRoles(['ADMIN']),
+    assignationValidationRules(),
+    validate,
+    createRelation,
+)
 
 /**
  * @swagger

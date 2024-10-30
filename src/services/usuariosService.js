@@ -87,13 +87,26 @@ const addSearchQueryIfPresent = (searchQuery) => {
     }
 }
 
-const getUsuarios = async (limit, offset, searchQuery) => {
+const addFilterIfPresent = (filter) => {
+    if (filter && filter !== '') {
+        return {
+            activo: filter
+        };
+    }
+}
+
+
+const getUsuarios = async (limit, offset, searchQuery, activo) => {
+
     try {
 
         const result = await Usuario.scope('withoutPassword').findAndCountAll({
             limit,
             offset,
-            where: { ...addSearchQueryIfPresent(searchQuery) },
+            where: {
+                ...addSearchQueryIfPresent(searchQuery),
+                ...addFilterIfPresent(activo)
+            },
             order: [['updatedAt', 'asc']],
             include: [
                 {

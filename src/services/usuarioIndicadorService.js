@@ -48,7 +48,6 @@ const isUsuarioAssignedToIndicador = async (idUsuario, idIndicador) => {
 
 const createRelation = async (usuarios, indicadores, relationOptions) => {
   const relations = [];
-
   for (const u of usuarios) {
     for (const i of indicadores) {
       relations.push({

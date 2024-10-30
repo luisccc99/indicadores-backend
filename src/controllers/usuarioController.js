@@ -15,10 +15,11 @@ require('dotenv').config();
 const getUsers = async (req, res, next) => {
   const page = req.matchedData.page || 1;
   const perPage = req.matchedData.perPage || 25;
-  const { searchQuery } = req.matchedData;
+  const { searchQuery, activo } = req.matchedData;
+
 
   try {
-    const { usuarios, total } = await getUsuarios(perPage, (page - 1) * perPage, searchQuery);
+    const { usuarios, total } = await getUsuarios(perPage, (page - 1) * perPage, searchQuery, activo);
     const totalInactivos = await countInactiveUsers();
     const totalPages = Math.ceil(total / perPage);
 
