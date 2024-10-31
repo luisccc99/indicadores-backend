@@ -49,7 +49,7 @@ const privateFilterRules = () => [
         .optional()
         .isInt()
         .toInt(),
-        
+
     query('activo')
         .optional()
         .isBoolean()
@@ -72,10 +72,12 @@ const sortValidationRules = () => [
 ];
 
 const createIndicadorValidationRules = () => [
-    body(['nombre', 'definicion', 'ultimoValorDisponible'])
+    body(['nombre', 'definicion'])
         .exists()
         .trim(),
-
+    body('ultimoValorDisponible')
+        .isDecimal()
+        .toFloat(),
     body('formula.ecuacion')
         .optional()
         .trim()
@@ -83,7 +85,7 @@ const createIndicadorValidationRules = () => [
 
     body('anioUltimoValorDisponible')
         .exists()
-        .isNumeric()
+        .isInt()
         .custom(validYear)
         .toInt(),
 
@@ -91,11 +93,10 @@ const createIndicadorValidationRules = () => [
         .isInt({ min: 1 })
         .toInt(),
 
-    body('idTema')
-        .exists()
+    body('temas.*')
         .isInt().toInt(),
 
-    body('idObjetivo')
+    body(['idObjetivo', 'idOds', 'idCobertura'])
         .exists()
         .isInt().toInt(),
 
@@ -115,7 +116,8 @@ const createIndicadorValidationRules = () => [
 
     body(['observaciones', 'formula.descripcion', 'historicos.*.fuente',
         'formula.variables.*.descripcion', 'formula.variables.*.nombre',
-        'mapa.ubicacion', 'fuente', 'adornment'])
+        'mapa.ubicacion', 'fuente', 'adornment', 'formula.variables.*.unidadMedida',
+        'unidadMedida'])
         .optional()
         .trim(),
 
@@ -123,10 +125,6 @@ const createIndicadorValidationRules = () => [
         .optional()
         .isNumeric()
         .custom(validYear)
-        .toInt(),
-
-    body(['catalogos.*', 'formula.variables.*.idUnidad'])
-        .isNumeric()
         .toInt(),
 
     body(['historicos.*.valor'])
