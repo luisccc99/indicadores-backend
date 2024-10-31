@@ -81,7 +81,7 @@ const getStorage = (destination) => {
 
 const upload = (destination) => {
   return multer({
-    storage: getStorage(destination),
+    storage: getDiskStorage(destination), // TODO: Change to S3 if available
     limits: {
       fileSize: MAX_IMAGE_SIZE,
       files: 1
