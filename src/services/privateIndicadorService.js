@@ -32,11 +32,11 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
         ods = [], activo = null, owner = null,
     } = filters || {};
 
-    const rows = await Indicador.findAll({
+    return Indicador.findAll({
         limit: perPage,
         offset: offset !== null ? offset : (page - 1) * perPage,
         attributes: [
-            'id', 'nombre', 'codigo', 'activo', 'tendenciaActual', 'ultimoValorDisponible',
+            'id', 'nombre', 'activo', 'tendenciaActual', 'ultimoValorDisponible',
             'adornment', 'unidadMedida', 'anioUltimoValorDisponible', 'updatedAt', 'createdAt',
             'createdBy', 'updatedBy', 'owner', 'observaciones', 'periodicidad'
         ],
@@ -50,15 +50,17 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
             ['id', 'asc']
         ],
         include: [
-            includeAndFilterByObjetivos({ idObjetivo, objetivos, destacado }),
-            includeAndFilterByTemas({ temas, idTema }),
-            includeAndFilterByODS({ ods }),
-            includeAndFilterByCobertura({ coberturas }),
-            includeAndFilterByUsuarios({ idUsuario, usuarios }),
+            includeAndFilterByObjetivos(
+                { idObjetivo, objetivos, destacado }, ['id', 'titulo', 'color', 'alias']),
+            includeAndFilterByTemas(
+                { temas, idTema }, ['id', 'temaIndicador', 'color']
+            ),
+            includeAndFilterByODS({ ods }, ['id', 'posicion', 'titulo']),
+            includeAndFilterByCobertura({ coberturas }, ['id', 'tipo', 'urlImagen']),
+            includeAndFilterByUsuarios({ idUsuario, usuarios }, ['id', 'nombres', 'correo', 'urlImagen']),
         ]
     });
 
-    return rows;
 }
 
 
@@ -88,13 +90,21 @@ async function countIndicadores({ searchQuery = '', ...filters }) {
 
 
 const filterBySearchQuery = (str) => {
-    return {
-        [Op.or]: [
-            { nombre: { [Op.iLike]: `%${str}%` } },
-            { unidadMedida: { [Op.iLike]: `%${str}%` } },
-            { codigo: { [Op.iLike]: `%${str}%` } }
-        ]
+    const filters = [
+        { nombre: { [Op.iLike]: `%${str}%` } },
+        { unidadMedida: { [Op.iLike]: `%${str}%` } },
+    ]
+
+    if (!isNaN(parseInt(str))) {
+        const searchById = {
+            id: {
+                [Op.eq]: parseInt(str)
+            }
+        }
+        filters.push(searchById)
     }
+
+    return { [Op.or]: filters }
 }
 
 

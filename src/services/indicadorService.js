@@ -28,6 +28,8 @@ const { updateIndicadorTemas } = require("./indicadorTemasService");
 const { updateIndicadorObjetivos } = require("./indicadorObjetivosService");
 const { updateIndicadorMetas } = require("./indicadorMetasService");
 const PublicIndicadorService = require("./publicIndicadorService");
+const logger = require("../config/logger");
+const usuariosService = require("./usuariosService");
 const { Op } = Sequelize;
 
 const LIMIT_NUMBER_INDICADORES_PER_OBJETIVO = 5;
@@ -272,7 +274,6 @@ const defineAttributes = (pathway, matchedData) => {
       attributes.push(
         "activo",
         "definicion",
-        "codigo",
         "owner",
         "observaciones",
         "createdBy",
@@ -467,31 +468,31 @@ const filterIndicadoresBy = (matchedData) => {
 
 
 const createIndicador = async (indicador) => {
-  const { catalogos, ...values } = indicador;
+  const { temas = [], idObjetivo, ...values } = indicador;
+
   try {
     const result = await sequelize.transaction(async _t => {
       const created = await Indicador.create(
         values,
         {
-          include: [{
-            association: Indicador.associations.formula,
-            include: [Formula.associations.variables]
-          }, {
-            association: Indicador.associations.mapa
-          }]
+          include: [
+            {
+              association: Indicador.associations.formula,
+              include: [Formula.associations.variables]
+            }, {
+              association: Indicador.associations.mapa
+            }]
         }
       );
-
-      if (catalogos) {
-        await addCatalogosToIndicador(catalogos, created.id)
-      }
-
+      await assignIndicadorToObjetivo(created.id, idObjetivo)
+      await assignIndicadorToTemas(created.id, temas)
       await assignIndicadorToUsuario(created.id, indicador.owner)
       return created;
     })
 
     return result;
   } catch (err) {
+    logger.error(err.stack)
     throw new Error(`Error al crear indicador: ${err.message}`);
   }
 };
@@ -504,7 +505,7 @@ const getFiltersForIndicadores = (queryParams) => {
   ];
 };
 
-const assignIndicadorToUsuario = (idIndicador, idUsuario) => {
+const assignIndicadorToUsuario = async (idIndicador, idUsuario) => {
   return createRelation(
     [idUsuario], [idIndicador], {
     fechaDesde: null,
@@ -512,6 +513,21 @@ const assignIndicadorToUsuario = (idIndicador, idUsuario) => {
     updatedBy: idUsuario,
     createdBy: idUsuario,
     expires: 'NO'
+  })
+}
+
+const assignIndicadorToTemas = async (idIndicador, idTemas) => {
+  return IndicadorTema.bulkCreate(
+    idTemas.map(idTema => ({ idTema, idIndicador })), {
+    ignoreDuplicates: true,
+    validate: true
+  })
+}
+
+const assignIndicadorToObjetivo = async (idIndicador, idObjetivo) => {
+  return IndicadorObjetivo.create({
+    idIndicador,
+    idObjetivo,
   })
 }
 
@@ -580,7 +596,7 @@ const defineIncludesForAnIndicador = (pathway, queryParams) => {
             'nombre',
             'descripcion',
             'dato',
-            'idUnidad',
+            'unidadMedida',
           ],
         }
       ]
@@ -616,16 +632,6 @@ const includeBasicModels = () => {
       as: 'ods',
       required: true,
       attributes: ['id', 'titulo', 'descripcion'],
-    },
-    {
-      model: CatalogoDetail,
-      as: 'catalogos',
-      required: false,
-      include: Catalogo,
-      through: {
-        model: CatalogoDetailIndicador,
-        attributes: [],
-      },
     },
   ]
 };
@@ -770,7 +776,6 @@ const includeAndFilterByTemas = (filterValues, attributes = []) => {
         id: ids
       }
     }),
-
     through: {
       model: IndicadorTema,
       attributes: [],
@@ -780,8 +785,7 @@ const includeAndFilterByTemas = (filterValues, attributes = []) => {
 
 
 const includeAndFilterByUsuarios = (filterValues, attributes = []) => {
-  const { idUsuario = null, usuarios = []} = filterValues || {};
-
+  const { idUsuario = null, usuarios = [] } = filterValues || {};
   const ids = [idUsuario, ...usuarios].filter(u => u);
 
   return {
@@ -821,7 +825,7 @@ const includeAndFilterByCobertura = (filterValues, attributes = []) => {
   const { coberturas = [] } = filterValues || {};
   return {
     model: Cobertura,
-    required: true,
+    required: false,
     ...(attributes.length > 0 && { attributes }),
     ...(coberturas.length > 0 && {
       where: {

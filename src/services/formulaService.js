@@ -15,10 +15,6 @@ const getFormulaAndVariables = async (where) => {
       },
       include: [{
         model: Variable,
-        include: [{
-          model: CatalogoDetail,
-          attributes: ['id', 'nombre']
-        }],
       }]
     });
   } catch (err) {

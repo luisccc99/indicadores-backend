@@ -86,8 +86,7 @@ const getAllTemas = async (page, perPage, matchedData) => {
                 'descripcion'
             ],
         });
-        const inactiveTemas = await countTemas();
-        return { temas: result.rows, total: result.count, totalInactivos: inactiveTemas };
+        return { temas: result.rows, total: result.count };
     } catch (err) {
         throw new Error(`Error al obtener todos los temas ${err.message}`);
     }

@@ -13,7 +13,7 @@ const { determineModel } = require('../middlewares/determinePathway');
 const { getInformation } = require('../controllers/generalController');
 
 
-router.get('/',
+router.get('/info/general',
     determineModel,
     generalFilterOptions(),
     paramValidationRules(),

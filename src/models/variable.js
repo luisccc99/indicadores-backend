@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
   class Variable extends Model {
     static associate(models) {
       this.belongsTo(models.Formula, { foreignKey: 'idFormula' });
-      this.belongsTo(models.CatalogoDetail, { foreignKey: 'idUnidad' });
     }
   };
   Variable.init({
@@ -34,13 +33,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'No aplica'
     },
 
-    idUnidad: {
-      type: DataTypes.INTEGER,
+    unidadMedida: {
+      type: DataTypes.STRING,
       allowNull: false,
-      references: {
-        model: 'CatalogoDetails',
-        key: 'id'
-      }
+      defaultValue: ''
     },
 
     // TODO: Add migration to allow null years
@@ -58,12 +54,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     modelName: 'Variable',
     timestamps: false,
-    indexes: [
-      {
-        unique: false,
-        fields: ['idUnidad']
-      }
-    ]
   });
   return Variable;
 };

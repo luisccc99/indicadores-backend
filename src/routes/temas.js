@@ -6,13 +6,14 @@ const {
     filterIndicadoresValidationRules,
     sortValidationRules,
 } = require('../middlewares/validator/indicadorValidator')
+const GeneralValidator = require('../middlewares/validator/generalValidator')
 const {
     paginationValidationRules,
     paramValidationRules,
     validate,
     generalFilterOptions,
     generalSortValidationRules,
-} = require('../middlewares/validator/generalValidator')
+} = GeneralValidator;
 const {
     createTemaValidationRules,
     updateTemaValidationRules,
@@ -98,7 +99,12 @@ temaRouter.use('/:idTema/indicadores', indicadorRouter);
  *           $ref: '#/components/responses/InternalServerError'
  */
 temaRouter.route('/')
-    .get(getTemas);
+    .get(
+        GeneralValidator.paginationValidationRules(),
+        GeneralValidator.searchQueryRule(),
+        validate,
+        getTemas
+    );
 
 
 /**
