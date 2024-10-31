@@ -14,19 +14,7 @@ module.exports = (sequelize, DataTypes) => {
             });
 
             this.belongsToMany(models.Usuario, { through: models.UsuarioIndicador, foreignKey: 'idIndicador' });
-
-            this.belongsToMany(models.CatalogoDetail, {
-                through: models.CatalogoDetailIndicador,
-                foreignKey: 'idIndicador',
-                as: 'catalogos'
-            });
-
-            this.belongsToMany(models.CatalogoDetail, {
-                through: models.CatalogoDetailIndicador,
-                foreignKey: 'idIndicador',
-                as: 'catalogosFilters'
-            });
-
+            
             this.hasOne(models.Formula, { foreignKey: 'idIndicador' });
 
             this.hasMany(models.Historico, { foreignKey: 'idIndicador' });
