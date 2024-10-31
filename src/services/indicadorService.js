@@ -743,7 +743,7 @@ const includeAndFilterByObjetivos = (filterValues, attributes = []) => {
   return {
     model: Objetivo,
     as: 'objetivos',
-    required: false,
+    required: true,
     ...(attributes.length > 0 && { attributes }),
     where: {
       ...(ids.length > 0 && {
@@ -769,7 +769,7 @@ const includeAndFilterByTemas = (filterValues, attributes = []) => {
 
   return {
     model: Tema,
-    required: false,
+    required: true,
     ...(attributes.length > 0 && { attributes }),
     ...(ids.length > 0 && {
       where: {
@@ -790,7 +790,7 @@ const includeAndFilterByUsuarios = (filterValues, attributes = []) => {
 
   return {
     model: Usuario,
-    required: false,
+    required: true,
     ...(attributes.length > 0 && { attributes }),
     ...(ids.length > 0 && {
       where: {
