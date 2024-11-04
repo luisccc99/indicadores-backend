@@ -526,12 +526,14 @@ const assignIndicadorToTemas = async (idIndicador, idTemas) => {
   })
 }
 
+
 const assignIndicadorToObjetivo = async (idIndicador, idObjetivo) => {
   return IndicadorObjetivo.create({
     idIndicador,
     idObjetivo,
   })
 }
+
 
 const updateIndicadorStatus = async (id) => {
   try {
@@ -542,14 +544,16 @@ const updateIndicadorStatus = async (id) => {
   }
 };
 
+
 const getIndicadorStatus = async (id) => {
   const { activo } = await Indicador.findOne({ where: { id }, attributes: ["activo"], raw: true });
   return activo;
 }
 
+
 const updateIndicador = async (id, indicador) => {
   const { catalogos, temas, objetivos, ...values } = indicador;
-
+  // TODO: validate indicadores destacados count, owner, 
   try {
     sequelize.transaction(async _t => {
       if (catalogos) {
@@ -738,17 +742,18 @@ const getRandomIndicador = async (idTema) => {
 
 
 const includeAndFilterByObjetivos = (filterValues, attributes = []) => {
-  const { idObjetivo = null, destacado = null, objetivos = [] } = filterValues;
+  const { idObjetivo = null, destacado = null, objetivos = [] } = filterValues || {};
+
   const ids = [idObjetivo, ...objetivos].filter(o => o);
 
   return {
     model: Objetivo,
     as: 'objetivos',
     required: true,
-    ...(attributes.length > 0 && { attributes }),
+    ...(attributes === null ? { attributes: [] } : { attributes }),
     where: {
       ...(ids.length > 0 && {
-        id: [idObjetivo, ...objetivos]
+        id: ids
       })
     },
     through: {
@@ -764,14 +769,14 @@ const includeAndFilterByObjetivos = (filterValues, attributes = []) => {
 
 
 const includeAndFilterByTemas = (filterValues, attributes = []) => {
-  const { idTema = null, temas = [] } = filterValues;
+  const { idTema = null, temas = [] } = filterValues || {};
 
   const ids = [idTema, ...temas].filter(t => t);
 
   return {
     model: Tema,
     required: true,
-    ...(attributes.length > 0 && { attributes }),
+    ...(attributes === null ? { attributes: [] } : { attributes }),
     ...(ids.length > 0 && {
       where: {
         id: ids

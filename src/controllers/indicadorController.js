@@ -29,6 +29,21 @@ const getIndicador = async (req, res, next) => {
   }
 }
 
+
+const getPublicIndicador = async (req, res, next) => {
+  const { idIndicador } = req.matchedData;
+  const indicador = await PublicIndicadorService.getIndicadorById(idIndicador);
+
+  if (!indicador) {
+    return res.status(409).json({ status: 409, message: `El indicador con id ${idIndicador} se encuentra inactivo` });
+  }
+  
+  const related = await PublicIndicadorService.getIndicadoresRelacionadosTo(idIndicador);
+
+  return res.status(200).json({ data: { ...indicador.dataValues, related } })
+}
+
+
 const generateFile = async (format, res, indicador) => {
   const filename = `${indicador.nombre}.${format}`
   res.header('Content-disposition', 'attachment');
@@ -233,5 +248,6 @@ module.exports = {
   getUsersFromIndicador,
   getIndicadoresOfObjetivo,
   getRandomIndicador,
-  getPublicIndicadores
+  getPublicIndicadores,
+  getPublicIndicador
 }

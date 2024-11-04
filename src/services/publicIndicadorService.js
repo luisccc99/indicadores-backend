@@ -1,3 +1,4 @@
+const logger = require('../config/logger');
 const {
     Indicador,
     Tema,
@@ -5,6 +6,12 @@ const {
     IndicadorObjetivo,
     IndicadorTema,
     Historico,
+    Ods,
+    UsuarioIndicador,
+    Usuario,
+    Formula,
+    Cobertura,
+    Variable,
     sequelize,
     Sequelize
 } = require('../models');
@@ -18,45 +25,67 @@ const { Op } = Sequelize;
  * @returns indicador object
  */
 async function getIndicadorById(id) {
-    const indicador = await Indicador.findOne({
-        where: { id },
-        include: [
-            {
+    try {
+        const indicador = await Indicador.findOne({
+            where: { id, activo: true },
+            attributes: [
+                "id", "nombre", "ultimoValorDisponible",
+                "adornment", "definicion", "anioUltimoValorDisponible",
+                "tendenciaActual", "fuente", "updatedAt",
+                "periodicidad", "archive", "unidadMedida",
+            ],
+            include: [{
                 model: Tema,
-                required: true,
+                required: false,
                 attributes: ['id', 'temaIndicador', 'color', 'codigo'],
                 through: {
                     model: IndicadorTema,
+                    attributes: []
                 }
-            },
-            {
+            }, {
                 model: Objetivo,
                 as: 'objetivos',
-                required: true,
-                attributes: ['id', 'titulo'],
+                required: false,
+                attributes: ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado']],
                 through: {
                     model: IndicadorObjetivo,
                     as: 'more',
-                    attributes: ['destacado']
+                    attributes: []
                 }
-            },
-            {
+            }, {
+                model: Formula,
+                required: false,
+                include: {
+                    model: Variable
+                }
+            }, {
                 model: Historico,
                 required: false,
                 attributes: ["anio", "valor", "fuente"],
                 limit: 5,
                 order: [["anio", "DESC"]],
-            }
-        ],
-        attributes,
-    });
-
-    const { prevIndicador, nextIndicador } = await definePrevNextIndicadores(id);
-
-    indicador['prev'] = prevIndicador;
-    indicador['next'] = nextIndicador;
-
-    return { ...indicador.dataValues };
+            }, {
+                model: Usuario,
+                required: false,
+                attributes: ['correo', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'descripcion', 'urlImagen'],
+                through: {
+                    model: UsuarioIndicador,
+                    // TODO ADD isOwner filter
+                    attributes: [],
+                },
+            }, {
+                model: Cobertura,
+                attributes: ['tipo', 'descripcion', 'urlImagen']
+            }, {
+                model: Ods,
+                attributes: ['posicion', 'titulo', 'descripcion', 'urlImagen']
+            }],
+        });
+        return indicador;
+    } catch (err) {
+        logger.error(err)
+        throw new Error('Hubo un error al consultar este indicador')
+    }
 }
 
 /**
@@ -100,7 +129,7 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
             ),
             includeAndFilterByODS(
                 { ods },
-                ['id', 'posicion', 'urlImagen']
+                ['id', 'posicion', 'urlImagen', 'titulo']
             )
         ],
         order: [
@@ -149,8 +178,66 @@ const filterBySearchQuery = (str) => {
     }
 }
 
+
+const getIndicadoresRelacionadosTo = async (idIndicador) => {
+    const indicador = await Indicador.findByPk(idIndicador, {
+        attributes: [],
+        include: [includeAndFilterByObjetivos(null, ['id'])],
+    });
+
+    if (!indicador) {
+        return []
+    }
+
+    const idObjetivo = indicador.objetivos[0].id;
+
+    const prev = await getIndicadorRelatedToObjetivo({ idIndicador, idObjetivo, position: 'prev' })
+    const next = await getIndicadorRelatedToObjetivo({ idIndicador, idObjetivo, position: 'next' })
+    return [...prev, ...next].sort((a, b) => a.id - b.id);
+}
+
+
+const getIndicadorRelatedToObjetivo = async ({ idIndicador, idObjetivo, position = null }) => {
+    const { op, order } = getOpAndOrderByPosition(position)
+
+    return Indicador.findAll({
+        attributes: ['id', 'nombre'],
+        limit: 3,
+        order,
+        where: {
+            activo: true,
+            id: {
+                [op]: idIndicador
+            }
+        },
+        include: [
+            includeAndFilterByObjetivos({ idObjetivo }, null)
+        ],
+        raw: true,
+        nest: true
+    });
+}
+
+
+const getOpAndOrderByPosition = (position) => {
+    let op = null;
+    let order = [];
+
+    if (position === 'prev') {
+        op = Op.lt;
+        order = [['id', 'DESC']]
+    } else if (position === 'next') {
+        op = Op.gt;
+        order = [['id', 'ASC']]
+    }
+
+    return { op, order }
+}
+
+
 module.exports = {
     getIndicadorById,
     getIndicadores,
-    countIndicadores
+    countIndicadores,
+    getIndicadoresRelacionadosTo
 }

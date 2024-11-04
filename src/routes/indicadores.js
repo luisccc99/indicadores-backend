@@ -24,6 +24,7 @@ const {
   updateIndicador,
   updateIndicadorStatus,
   getUsersFromIndicador,
+  getPublicIndicador,
 } = require('../controllers/indicadorController');
 const { verifyJWT, verifyUserHasRoles, verifyUserIsActive } = require('../middlewares/auth');
 const { determinePathway, SITE_PATH, FRONT_PATH, determineModel } = require('../middlewares/determinePathway');
@@ -209,11 +210,9 @@ const router = promisedRouter()
  */
 router.get('/:idIndicador',
   idValidation(),
-  filterIndicadoresValidationRules(),
   validate,
-  determinePathway(SITE_PATH),
   exists('idIndicador', 'Indicador'),
-  getIndicador
+  getPublicIndicador
 );
 
 
