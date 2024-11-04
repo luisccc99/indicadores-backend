@@ -27,6 +27,11 @@ module.exports = {
         }
       },
 
+      unidadMedida: {
+        defaultValue: 'No aplica',
+        type: Sequelize.STRING
+      },
+
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

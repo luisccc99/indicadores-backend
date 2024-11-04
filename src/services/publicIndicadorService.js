@@ -139,6 +139,7 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
 
     });
 
+
     return rows;
 }
 

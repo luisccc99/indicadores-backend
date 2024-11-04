@@ -8,10 +8,8 @@ const createVariableValidationRules = () => [
     .custom(validYear)
     .toInt(),
 
-  body('variables.*.idUnidad')
-    .if(body('variables').exists())
-    .isNumeric()
-    .toInt(),
+  body('variables.*.unidadMedida')
+    .if(body('variables').exists()),
 
   body('variables.*.dato')
     .if(body('variables').exists())
@@ -39,10 +37,8 @@ const updateVariableValidationRules = () => [
     .custom(validYear)
     .toInt(),
 
-  body('idUnidad')
-    .optional()
-    .isNumeric()
-    .toInt(),
+  body('unidadMedida')
+    .optional(),
 
   body('dato')
     .optional()

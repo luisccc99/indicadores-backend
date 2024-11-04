@@ -10,7 +10,7 @@ module.exports = {
     host: process.env.POSTGRE_DEV_HOST,
     port: process.env.POSTGRE_DEV_PORT,
     dialect: 'postgres',
-    logging: logger.info.bind(logger)
+    logging: false
   },
   test: {
     username: process.env.POSTGRE_TEST_USER,
@@ -19,7 +19,7 @@ module.exports = {
     host: process.env.POSTGRE_TEST_HOST,
     port: process.env.POSTGRE_TEST_PORT,
     dialect: 'postgres',
-    logging: logger.info.bind(logger)
+    logging: false
   },
   production: {
     username: process.env.POSTGRE_PRO_USER,
@@ -28,7 +28,7 @@ module.exports = {
     port: process.env.POSTGRE_PRO_PORT,
     host: process.env.POSTGRE_PRO_HOST,
     dialect: 'postgres',
-    logging: logger.info.bind(logger)
+    logging: false
   },
   dialectOptions: {
     ssl: true

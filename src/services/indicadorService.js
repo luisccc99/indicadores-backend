@@ -370,6 +370,7 @@ const defineWhere = (pathway, matchedData) => {
 const getIndicador = async (idIndicador, pathway) => {
   const includes = defineIncludesForAnIndicador(pathway);
   const attributes = defineAttributes(pathway);
+
   try {
     let indicador = await Indicador.findOne({
       where: { id: idIndicador, },
@@ -380,8 +381,8 @@ const getIndicador = async (idIndicador, pathway) => {
     if (pathway !== FILE_PATH || indicador === null) {
 
       //const { prevIndicador, nextIndicador } = await definePrevNextIndicadores(temaID, idIndicador);
-      indicador['prev'] = 2;
-      indicador['next'] = 3;
+      // indicador['prev'] = 2;
+      // indicador['next'] = 3;
       return indicador;
     }
 
@@ -492,6 +493,7 @@ const createIndicador = async (indicador) => {
 
     return result;
   } catch (err) {
+    console.log(err)
     logger.error(err.stack)
     throw new Error(`Error al crear indicador: ${err.message}`);
   }
