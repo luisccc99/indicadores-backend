@@ -134,7 +134,6 @@ const getIndicadoresOfObjetivo = async (req, res, _next) => {
       destacado: true,
     })
 
-    console.log(destacados);
   }
 
   if (page > 1) {
