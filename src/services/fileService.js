@@ -214,7 +214,7 @@ const generatePDF = async (indicador) => {
   })
   handlebars.registerHelper('hasVariablesNotFormula', (formula) => formula.dataValues.isFormula == 'SI');
   handlebars.registerHelper('hasValue', (value) => (value.trim().length === 0));
-  handlebars.registerHelper('returnDato', (idUnidad) => returnUnit(idUnidad));
+  handlebars.registerHelper('returnDato', (unidadMedida) => returnUnit(unidadMedida));
   handlebars.registerHelper('returnFuente', (fuente) => returnFuente(fuente));
 
   const template = handlebars.compile(templateHtml);

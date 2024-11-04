@@ -133,6 +133,8 @@ const getIndicadoresOfObjetivo = async (req, res, _next) => {
       searchQuery,
       destacado: true,
     })
+
+    console.log(destacados);
   }
 
   if (page > 1) {
@@ -148,6 +150,8 @@ const getIndicadoresOfObjetivo = async (req, res, _next) => {
   });
 
   indicadores = [...destacados, ...noDestacados]
+
+
 
   return res.status(200).json({
     page,

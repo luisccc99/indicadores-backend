@@ -8,6 +8,7 @@ const swaggerUi = require('swagger-ui-express');
 const path = require('path')
 const logger = require('./src/config/logger');
 const logErrors = require('./src/middlewares/log');
+const scheduler = require('./src/middlewares/scheduler');
 
 const PORT = process.env.PORT || 8080;
 const env = process.env.NODE_ENV || 'development';
@@ -103,6 +104,10 @@ app.use('/uploads/usuarios/images', express.static(path.join(__dirname, 'uploads
 app.use('/uploads/mapas', express.static(path.join(__dirname, 'uploads', 'mapas')));
 app.use(logErrors)
 
+// scheduler();
+
 const server = app.listen(PORT, () => logger.info(`App starting on port ${PORT}`));
+
+
 
 module.exports = { server, app };

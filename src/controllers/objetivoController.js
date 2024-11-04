@@ -65,6 +65,7 @@ const getObjetivos = async (req, res, next) => {
                 [sequelize.fn('COUNT', sequelize.col('"indicadores"."id"')), 'indicadoresCount'],
                 'summary',
                 'urlImagen',
+                'descripcion',
                 'color',
                 'alias',
             ],

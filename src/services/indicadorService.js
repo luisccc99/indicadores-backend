@@ -370,6 +370,13 @@ const defineWhere = (pathway, matchedData) => {
 const getIndicador = async (idIndicador, pathway) => {
   const includes = defineIncludesForAnIndicador(pathway);
   const attributes = defineAttributes(pathway);
+
+  console.log('sjssjsjs')
+  console.log('sjssjsjs')
+  console.log('sjssjsjs')
+  console.log('sjssjsjs')
+  console.log('sjssjsjs')
+  console.log(includes);
   try {
     let indicador = await Indicador.findOne({
       where: { id: idIndicador, },
@@ -492,6 +499,7 @@ const createIndicador = async (indicador) => {
 
     return result;
   } catch (err) {
+    console.log(err)
     logger.error(err.stack)
     throw new Error(`Error al crear indicador: ${err.message}`);
   }
@@ -737,7 +745,6 @@ const getRandomIndicador = async (idTema) => {
 
 const includeAndFilterByObjetivos = (filterValues, attributes = []) => {
   const { idObjetivo = null, destacado = null, objetivos = [] } = filterValues;
-
   const ids = [idObjetivo, ...objetivos].filter(o => o);
 
   return {
