@@ -4,26 +4,13 @@ const PrivateIndicadorService = require('../services/privateIndicadorService');
 const IndicadorService = require("../services/indicadorService")
 const { generateCSV, generateXLSX, generatePDF } = require("../services/fileService");
 const UsuarioService = require('../services/usuariosService');
-const { FILE_PATH, FRONT_PATH, SITE_PATH } = require('../middlewares/determinePathway');
 const { getImagePathLocation } = require('../utils/stringFormat');
 
 
 const getIndicador = async (req, res, next) => {
-  const { pathway } = req;
-  const { idIndicador, format } = req.matchedData;
-  try {
-    const indicador = await IndicadorService.getIndicador(idIndicador, pathway);
-
-    // TODO: validate if temas related to indicador are not active
-    if (!indicador.activo) {
-      return res.status(409).json({ status: 409, message: `El indicador ${indicador.nombre} se encuentra inactivo` });
-    }
-
-    return (res.status(200).json({ data: indicador, navigation: { prev: indicador.prev, next: indicador.next } }));
-
-  } catch (err) {
-    next(err)
-  }
+  const { idIndicador} = req.matchedData;
+  const indicador = await PrivateIndicadorService.getIndicadorById(idIndicador);
+  return res.status(200).json({ data: indicador });
 }
 
 
@@ -44,6 +31,11 @@ const getPublicIndicador = async (req, res, next) => {
 const generateFile = async (req, res, next) => {
   const { idIndicador, format } = req.matchedData;
   let indicador = await PublicIndicadorService.getIndicadorById(idIndicador);
+
+  if (!indicador) {
+    return res.status(409).json({ status: 409, message: `El indicador con id ${idIndicador} se encuentra inactivo` });
+  }
+  
   const filename = `${indicador.nombre}.${format}`
   res.header('Content-disposition', 'attachment');
   res.attachment(filename)
