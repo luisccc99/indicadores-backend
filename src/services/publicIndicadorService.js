@@ -81,6 +81,10 @@ async function getIndicadorById(id) {
                 attributes: ['posicion', 'titulo', 'descripcion', 'urlImagen']
             }],
         });
+        if (!indicador) {
+            return null;
+        }
+
         return indicador.get({ plain: true });
     } catch (err) {
         logger.error(err)
