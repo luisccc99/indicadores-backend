@@ -128,7 +128,7 @@
   }
 
   .indicador__information_body div {
-    margin-top: 25px;
+    margin-top: 17px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -140,7 +140,7 @@
     table-layout: fixed;
     width: 100%;
     max-width: 100%;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   table td,
@@ -171,8 +171,8 @@
   }
 
   .card {
-    width: 260px;
-    height: 260px;
+    width: 240px;
+    height: 240px;
     background-color: #ffffff;
     color: white;
     border: 1px solid #e1e1e1;
@@ -192,8 +192,8 @@
   .card__circle {
     background-color: #0f252c;
     border-radius: 50%;
-    height: 110px;
-    width: 110px;
+    height: 100px;
+    width: 100px;
     text-align: center;
     display: flex;
     justify-content: center;
@@ -265,7 +265,7 @@
 <body>
 
   <div>
-    {{{calculateTopPx Tema}}}
+    {{{calculateTopPx objetivos.[0]}}}
   </div>
   <main id="container">
     <div class="watermark" id="watermark">
@@ -274,12 +274,6 @@
     </div>
     <header>
       <div id="pageHeader" class="title__logos">
-        <!-- <img
-                class="header__img"
-                alt="IMPLAN"
-                src="https://indicadores-bucket-chihuahua.s3.us-east-2.amazonaws.com/images/implan_logo_color.png"
-            /> -->
-
         <img class="header__img" alt="Metrica"
           src="https://chihuahua-metrica-bucket.s3.us-west-1.amazonaws.com/images/chihuahua-metrica-logo.png" />
       </div>
@@ -287,11 +281,7 @@
         <h2>Chihuahua en Datos</h2>
         <caption><i>www.chihuahuametrica.online/chihuahua-en-datos</i></caption>
       </div>
-      <div class="indicador__title">
-        {{Tema.temaIndicador}}
-      </div>
     </header>
-
     <section class="mt-3">
       <div class="indicador__information_body">
         <div class="indicador__summary">
@@ -308,7 +298,25 @@
             </tbody>
           </table>
         </div>
-
+        <div class="indicador__summary">
+          <table>
+            <thead>
+              <tr>
+                <th style="font-weight: 600;">Objetivo PDU2040</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align: start !important;">
+                  {{objetivos.[0].titulo}} 
+                  {{#if objetivos.[0].destacado}}
+                  <span style="font-weight: 600;">Este indicador abona principalmente para lograr este objetivo</span>
+                  {{/if}}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <div class="indicador__catalogs">
           <table>
             <thead>
@@ -320,9 +328,16 @@
             </thead>
             <tbody>
               <tr>
-                <td>{{Tema.temaIndicador}}</td>
-                <td>{{getCatalogo catalogos 1}}</td>
-                <td>{{getCatalogo catalogos 3}}</td>
+                <td>
+                  <ul
+                    style="display: inline-flex; list-style-type: none; margin: 0; padding: 0; flex-wrap: wrap; gap: 3px;">
+                    {{#each temas}}
+                    <li style="background-color: #dddddd; padding: 5px; border-radius: 7px;">{{this.temaIndicador}}</li>
+                    {{/each}}
+                  </ul>
+                </td>
+                <td>{{ods.titulo}}</td>
+                <td>{{cobertura.tipo}}</td>
               </tr>
             </tbody>
           </table>
@@ -333,13 +348,13 @@
             <div class="card">
               <div class="card__header">
                 <div class="card__circle">
-                  <b>{{numberWithCommas ultimoValorDisponible}}</b>
+                  <b>{{numberWithCommas ultimoValorDisponible}} {{adornment}}</b>
                 </div>
               </div>
               <div class="container__card">
                 <span>
                   <p><b>Último Valor Disponible</b></p>
-                  <p>{{getCatalogo catalogos 2}}</p>
+                  <p>{{unidadMedida}}</p>
                 </span>
               </div>
             </div>
@@ -385,7 +400,7 @@
             <div class="card">
               <div class="card__header">
                 <div class="card__circle">
-                  <b>{{getCatalogo catalogos 3}}</b>
+                  <b>{{cobertura.tipo}}</b>
                 </div>
                 <div class="container__card">
                   <span>
@@ -402,7 +417,7 @@
 
 
     {{#if formula}}
-    {{#if (hasVariablesNotFormula formula)}}
+    {{#if (isFormula formula)}}
     <section class="mt-3">
       <br />
       <h2>Fórmula</h2>
@@ -410,6 +425,17 @@
         <p>{{formula.descripcion}}</p>
       </div>
       <span style="font-size: 22px">$${{formula.ecuacion}}$$</span>
+    </section>
+
+    {{else}}
+    <section>
+      <h2>Origen de datos</h2>
+      <div class="inner-section mt-1">
+        <p>{{formula.descripcion}}</p>
+      </div>
+    </section>
+    {{/if}}
+    {{#if (hasItems formula.variables)}}
       <table class="mt-1" style="width: 100%; border-collapse: collapse; margin: auto">
         <thead>
           <tr style="border-bottom: 1px solid; font-weight: 600">
@@ -434,40 +460,11 @@
           {{/each}}
         </tbody>
       </table>
-    </section>
-
-    {{else}}
-    <section>
-      <h2>Fórmula</h2>
-      <div class="inner-section mt-1">
-        <p>{{formula.descripcion}}</p>
-      </div>
-      <table style="width: 100%; border-collapse: collapse; margin: auto">
-        <thead>
-          <tr style="border-bottom: 1px solid; font-weight: 600">
-            <th>Variable</th>
-            <th>Descripción</td>
-            <th>Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each formula.variables}}
-          <tr>
-            <td style="word-wrap: break-word;">
-              {{this.nombre}}
-            </td>
-            <td>{{returnFuente ../fuente}}</td>
-            <td align="right">{{this.dato}}{{{returnDato this.unidadMedida}}}</td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    </section>
-    {{/if}}
+      {{/if}}
     {{/if}}
 
 
-    {{#if (hasHistoricos historicos)}}
+    {{#if (hasItems historicos)}}
     <section class="mt-3">
       <h2>Valores históricos</h2>
       <table style="width: 100%; border-collapse: collapse; margin: auto">
@@ -499,7 +496,7 @@
     </section>
     {{/if}}
 
-    {{#if (hasHistoricos historicos)}}
+    {{#if (hasItems historicos)}}
     <section class="mt-3">
       <h2>Gráfica de datos</h2>
       <canvas id="chart" style="width: 500px; margin: auto; height: 150px;">
