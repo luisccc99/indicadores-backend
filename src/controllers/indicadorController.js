@@ -13,13 +13,10 @@ const getIndicador = async (req, res, next) => {
   const { idIndicador, format } = req.matchedData;
   try {
     const indicador = await IndicadorService.getIndicador(idIndicador, pathway);
-    // TODO: validate if temas related to indicador are not active
-    if (!indicador.activo && pathway !== FRONT_PATH) {
-      return res.status(409).json({ status: 409, message: `El indicador ${indicador.nombre} se encuentra inactivo` });
-    }
 
-    if (pathway === FILE_PATH) {
-      return generateFile(format, res, indicador).catch(err => next(err));
+    // TODO: validate if temas related to indicador are not active
+    if (!indicador.activo) {
+      return res.status(409).json({ status: 409, message: `El indicador ${indicador.nombre} se encuentra inactivo` });
     }
 
     return (res.status(200).json({ data: indicador, navigation: { prev: indicador.prev, next: indicador.next } }));
@@ -37,45 +34,40 @@ const getPublicIndicador = async (req, res, next) => {
   if (!indicador) {
     return res.status(409).json({ status: 409, message: `El indicador con id ${idIndicador} se encuentra inactivo` });
   }
-  
+
   const related = await PublicIndicadorService.getIndicadoresRelacionadosTo(idIndicador);
 
-  return res.status(200).json({ data: { ...indicador.dataValues, related } })
+  return res.status(200).json({ data: { ...indicador, related } })
 }
 
 
-const generateFile = async (format, res, indicador) => {
+const generateFile = async (req, res, next) => {
+  const { idIndicador, format } = req.matchedData;
+  let indicador = await PublicIndicadorService.getIndicadorById(idIndicador);
   const filename = `${indicador.nombre}.${format}`
   res.header('Content-disposition', 'attachment');
   res.attachment(filename)
+
   switch (format) {
     case 'json':
-      return (
-        res.header('Content-Type', 'application/json'),
-        res.send(indicador)
-      );
+      res.header('Content-Type', 'application/json');
+      return res.send(indicador);
     case 'csv':
+      res.header('Content-Type', 'application/csv');
       const csvData = generateCSV(indicador);
-      return (
-        res.header('Content-Type', 'application/csv'),
-        res.send(csvData)
-      );
+      return res.send(csvData);
     case 'xlsx':
+      res.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       const content = await generateXLSX(indicador);
       const readStream = new stream.PassThrough();
       readStream.end(content);
-      return (
-        res.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
-        readStream.pipe(res)
-      );
+      return readStream.pipe(res);
     case 'pdf':
+      res.header('Content-Type', 'application/pdf');
       const doc = await generatePDF(indicador);
-      return (
-        res.header('Content-Type', 'application/pdf'),
-        res.send(doc)
-      );
+      return res.send(doc);
     default:
-      throw new Error('Invalid file format');
+      return res.status(409).json({ message: 'Formato de archivo invalido' });
   }
 }
 
@@ -249,5 +241,6 @@ module.exports = {
   getIndicadoresOfObjetivo,
   getRandomIndicador,
   getPublicIndicadores,
-  getPublicIndicador
+  getPublicIndicador,
+  generateFile
 }

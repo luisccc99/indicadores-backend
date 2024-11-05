@@ -1,15 +1,13 @@
-const express = require('express');
-const router = express.Router();
-
 const {
   validate,
   idValidation,
   formatDocsValidation,
 } = require('../middlewares/validator/generalValidator');
 const { exists } = require('../middlewares/resourceExists');
+const IndicadorController = require('../controllers/indicadorController');
+const promisedRouter = require('express-promise-router');
+const router = promisedRouter();
 
-const { getIndicador } = require('../controllers/indicadorController');
-const { determinePathway, FILE_PATH } = require('../middlewares/determinePathway');
 
 /**
  * @swagger
@@ -180,14 +178,13 @@ const { determinePathway, FILE_PATH } = require('../middlewares/determinePathway
  *           $ref: '#/components/responses/InternalServerError'
  */
 
-router.route('/:idIndicador/:format?')
+router.route('/:idIndicador/:format')
   .get(
     idValidation(),
     formatDocsValidation(),
     validate,
     exists('idIndicador', 'Indicador'),
-    determinePathway(FILE_PATH),
-    getIndicador
+    IndicadorController.generateFile
   );
 
 module.exports = router;
