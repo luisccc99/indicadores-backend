@@ -46,7 +46,7 @@ async function getIndicadorById(id) {
                 model: Objetivo,
                 as: 'objetivos',
                 required: false,
-                attributes: ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado']],
+                attributes: ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado'], 'color'],
                 through: {
                     model: IndicadorObjetivo,
                     as: 'more',
@@ -81,7 +81,11 @@ async function getIndicadorById(id) {
                 attributes: ['posicion', 'titulo', 'descripcion', 'urlImagen']
             }],
         });
-        return indicador;
+        if (!indicador) {
+            return null;
+        }
+
+        return indicador.get({ plain: true });
     } catch (err) {
         logger.error(err)
         throw new Error('Hubo un error al consultar este indicador')

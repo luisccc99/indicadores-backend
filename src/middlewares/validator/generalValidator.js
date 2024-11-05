@@ -106,6 +106,7 @@ const idValidation = () => {
 
 const formatDocsValidation = () => {
     return param(["format"])
+        .toLowerCase()
         .isIn(['csv', 'xlsx', 'pdf', 'json'])
         .withMessage('formato debe ser csv, xlsx, pdf o json')
 }

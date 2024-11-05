@@ -98,12 +98,6 @@ const generateCSV = (data) => {
   return csv;
 };
 
-const UNIDAD_ID = 2;
-const COBERTURA_ID = 3;
-
-const getFromCatalogos = (catalogos = [], id) => {
-  return catalogos.find(catalogo => catalogo?.dataValues?.idCatalogo === id)
-}
 
 const generateXLSX = (indicador) => {
   let baseFile = "./src/templates/indicador.xlsx";
@@ -119,12 +113,12 @@ const generateXLSX = (indicador) => {
       for (const field of fields) {
         let initialRow = 2;
         let value = indicador[field];
-        if (field === 'Tema') {
-          value = indicador[field].dataValues.temaIndicador;
+        if (field === 'temas') {
+          value = indicador[field][0]?.temaIndicador || 'NA';
         } else if (field === 'medida') {
-          value = getFromCatalogos(indicador['catalogos'], UNIDAD_ID)?.dataValues.nombre || 'NA';
+          value = indicador.unidadMedida;
         } else if (field === 'cobertura') {
-          value = getFromCatalogos(indicador['catalogos'], COBERTURA_ID)?.dataValues.nombre || 'NA';
+          value = indicador.cobertura.tipo;
         } else if (field === 'ecuacion') {
           const formula = indicador?.formula?.dataValues;
           row.getCell(col++).value = formula?.ecuacion || 'NA';
@@ -161,6 +155,7 @@ const generateXLSX = (indicador) => {
       return await workBook.xlsx.writeBuffer();;
     })
     .catch(err => {
+      logger.error(err)
       throw err;
     });
 };
@@ -179,24 +174,19 @@ const generatePDF = async (indicador) => {
   handlebars.registerHelper('isAscending', (str) => str === 'Ascendente');
   handlebars.registerHelper('notApplies', (str) => str === 'No aplica');
   handlebars.registerHelper('numberWithCommas', numberWithCommas);
-  handlebars.registerHelper('getCatalogo', (catalogos, id) => {
-    return catalogos
-      .sort((a, b) => a.idCatalogo - b.idCatalogo)
-      .find(indicador => indicador.idCatalogo === id)?.nombre || 'NA';
-  });
   handlebars.registerHelper('toString', (num) => num?.toString());
   handlebars.registerHelper('containsNA', (str) => str?.includes("NA") ? "NA" : str);
   handlebars.registerHelper('valueIsNull', (str) => str === null);
-  handlebars.registerHelper('hasHistoricos', (historicos) => historicos.length > 0);
+  handlebars.registerHelper('hasItems', (arr) => arr.length > 0);
   handlebars.registerHelper('hasFormula', (formula) => typeof formula !== undefined || formula !== null)
-  handlebars.registerHelper('calculateTopPx', (Tema) => {
-    const top = (parseInt(Tema.id) - 1) * 35;
+  handlebars.registerHelper('calculateTopPx', (objetivo) => {
+    const top = (parseInt(objetivo.id) - 1) * 35;
     return `
     <style>
       .tematica__id {
-        width: 28px;
-        height: 28px;
-        background: ${Tema.color};
+        width: 60px;
+        height: 30px;
+        background: ${objetivo.color};
         color: white;
         display: flex;
         justify-content: center;
@@ -208,11 +198,11 @@ const generatePDF = async (indicador) => {
       }
     </style>
     <div class="tematica__id">
-      ${Tema.codigo}
+      objetivo ${objetivo.id}
     </div>   
     `;
   })
-  handlebars.registerHelper('hasVariablesNotFormula', (formula) => formula.dataValues.isFormula == 'SI');
+  handlebars.registerHelper('isFormula', (formula) => formula.isFormula == 'SI');
   handlebars.registerHelper('hasValue', (value) => (value.trim().length === 0));
   handlebars.registerHelper('returnDato', (unidadMedida) => returnUnit(unidadMedida));
   handlebars.registerHelper('returnFuente', (fuente) => returnFuente(fuente));
@@ -267,7 +257,8 @@ const generatePDF = async (indicador) => {
       years,
       values,
     ).catch((err) => {
-      throw err;
+      logger.error(err)
+      throw new Error('No se puede generar el archivo de este indicador en este momento');
     });
   }
 
@@ -286,7 +277,7 @@ const generatePDF = async (indicador) => {
     footerTemplate: `
     <div clas="test" style="width: 100%; font-size: 7px; z-index: 10000;
         padding: 5px 5px 0; position: relative;">
-        <div style="position: absolute; left: 10px; bottom: 0; font-size: 8px; z-index: 10000;">
+        <div style="position: absolute; left: 10px; bottom: 0; font-size: 8px; z-index: 10000; color: gray;">
           <div>
           Generado el ${month}/${day}/${year}
           </div>
@@ -297,7 +288,7 @@ const generatePDF = async (indicador) => {
             ${footer}
           </div>
         </div>
-        <div style="position: absolute; right: 10px; bottom: 0; font-size: 8px; z-index: 10000;">
+        <div style="position: absolute; right: 10px; bottom: 0; font-size: 8px; z-index: 10000; color: gray;">
           Página 
           <span class="pageNumber">
           </span> 
