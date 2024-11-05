@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Indicador } = require('../models');
+const { Indicador, Tema, IndicadorTema, Objetivo, IndicadorObjetivo, Cobertura, Ods, sequelize } = require('../models');
 const {
     includeAndFilterByObjetivos, includeAndFilterByODS,
     includeAndFilterByCobertura, includeAndFilterByUsuarios,
@@ -108,10 +108,42 @@ const filterBySearchQuery = (str) => {
 }
 
 
+const getIndicadorById = async (idIndicador) => {
+    const indicador = await Indicador.findByPk(idIndicador, {
+        include: [{
+            model: Tema,
+            required: false,
+            attributes: ['id', 'temaIndicador', 'color', 'codigo'],
+            through: {
+                model: IndicadorTema,
+                attributes: []
+            }
+        }, {
+            model: Objetivo,
+            as: 'objetivos',
+            required: false,
+            attributes: ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado'], 'color'],
+            through: {
+                model: IndicadorObjetivo,
+                as: 'more',
+                attributes: []
+            }
+        }, {
+            model: Cobertura,
+            attributes: ['tipo', 'descripcion', 'urlImagen']
+        }, {
+            model: Ods,
+            attributes: ['posicion', 'titulo', 'descripcion', 'urlImagen']
+        }]
+    })
+    return indicador.get({ plain: true });
+}
+
 
 module.exports = {
     getIndicadores,
-    countIndicadores
+    countIndicadores,
+    getIndicadorById
 }
 
 
