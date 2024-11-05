@@ -130,10 +130,10 @@ const getIndicadorById = async (idIndicador) => {
             }
         }, {
             model: Cobertura,
-            attributes: ['tipo', 'descripcion', 'urlImagen']
+            attributes: ['id', 'tipo', 'descripcion', 'urlImagen']
         }, {
             model: Ods,
-            attributes: ['posicion', 'titulo', 'descripcion', 'urlImagen']
+            attributes: ['id', 'posicion', 'titulo', 'descripcion', 'urlImagen']
         }]
     })
     return indicador.get({ plain: true });
