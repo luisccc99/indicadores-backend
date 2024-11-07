@@ -78,6 +78,12 @@ module.exports = (sequelize, DataTypes) => {
                 validate: {
                     isIn: [['SI', 'NO']]
                 }
+            },
+
+            isOwner: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
             }
         },
         {
