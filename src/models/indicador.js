@@ -5,6 +5,20 @@ const {
 module.exports = (sequelize, DataTypes) => {
     class Indicador extends Model {
         static associate(models) {
+            this.belongsToMany(models.Usuario, {
+                as: 'responsible',
+                foreignKey: 'idIndicador',
+                otherKey: 'idUsuario',
+                through: models.UsuarioIndicador,
+            });
+
+            this.belongsToMany(models.Usuario, {
+                as: 'usuarios',
+                foreignKey: 'idIndicador',
+                otherKey: 'idUsuario',
+                through: models.UsuarioIndicador,
+            });
+
             this.belongsTo(models.Cobertura, {
                 foreignKey: 'idCobertura'
             });
@@ -13,8 +27,6 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'idOds'
             });
 
-            this.belongsToMany(models.Usuario, { through: models.UsuarioIndicador, foreignKey: 'idIndicador' });
-            
             this.hasOne(models.Formula, { foreignKey: 'idIndicador' });
 
             this.hasMany(models.Historico, { foreignKey: 'idIndicador' });
