@@ -810,7 +810,6 @@ const includeAndFilterByUsuarios = (filterValues, attributes) => {
   }
 }
 
-
 const filterByUsuarios = (filterValues = {}) => {
   const { idUsuario = null, owner = null, usuarios = [], isOwner = null } = filterValues || {};
   const ids = [idUsuario, owner, ...usuarios].filter(u => u);
@@ -840,10 +839,7 @@ const includeResponsible = (attributes) => {
     through: {
       model: UsuarioIndicador,
       attributes: [],
-      where: {
-        isOwner: true
-      },
-
+      where: { isOwner: true }
     }
   }
 }

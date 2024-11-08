@@ -3,7 +3,9 @@ const { Indicador, Tema, IndicadorTema, Objetivo, IndicadorObjetivo, Cobertura, 
 const {
     includeAndFilterByObjetivos, includeAndFilterByODS,
     includeAndFilterByCobertura, includeAndFilterByUsuarios,
-    includeAndFilterByTemas
+    includeAndFilterByTemas,
+    includeResponsible,
+    filterByUsuarios
 } = require('./indicadorService');
 
 
@@ -31,35 +33,37 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
         temas = [], usuarios = [], idUsuario = null, coberturas = [],
         ods = [], activo = null, owner = null,
     } = filters || {};
-
-    return Indicador.findAll({
-        limit: perPage,
-        offset: offset !== null ? offset : (page - 1) * perPage,
-        attributes: [
-            'id', 'nombre', 'activo', 'tendenciaActual', 'ultimoValorDisponible',
-            'adornment', 'unidadMedida', 'anioUltimoValorDisponible', 'updatedAt', 'createdAt',
-            'createdBy', 'updatedBy', 'owner', 'observaciones', 'periodicidad'
-        ],
-        where: {
-            ...(activo !== null && { activo }),
-            ...(searchQuery && filterBySearchQuery(searchQuery)),
-            ...(owner !== null && { owner })
-        },
-        order: [
-            ['updatedAt', 'desc'],
-            ['id', 'asc']
-        ],
-        include: [
-            includeAndFilterByObjetivos(
-                { idObjetivo, objetivos, destacado }, ['id', 'titulo', 'color', 'alias']),
-            includeAndFilterByTemas(
-                { temas, idTema }, ['id', 'temaIndicador', 'color']
-            ),
-            includeAndFilterByODS({ ods }, ['id', 'posicion', 'titulo']),
-            includeAndFilterByCobertura({ coberturas }, ['id', 'tipo', 'urlImagen']),
-            includeAndFilterByUsuarios({ idUsuario, usuarios }, ['id', 'nombres', 'correo', 'urlImagen']),
-        ]
-    });
+    try {
+        const row = await Indicador.findAll({
+            limit: perPage,
+            offset: offset !== null ? offset : (page - 1) * perPage,
+            attributes: [
+                'id', 'nombre', 'activo', 'tendenciaActual', 'ultimoValorDisponible',
+                'adornment', 'unidadMedida', 'anioUltimoValorDisponible', 'updatedAt', 'createdAt',
+                'createdBy', 'updatedBy', 'observaciones', 'periodicidad'
+            ],
+            where: {
+                ...(activo !== null && { activo }),
+                ...(searchQuery && filterBySearchQuery(searchQuery)),
+            },
+            order: [
+                ['id', 'asc'],
+                ['updatedAt', 'desc'],
+            ],
+            include: [
+                includeAndFilterByObjetivos({ idObjetivo, objetivos, destacado }, ['id', 'titulo', 'color', 'alias']),
+                includeAndFilterByTemas({ temas, idTema }, ['id', 'temaIndicador', 'color']),
+                includeAndFilterByODS({ ods }, ['id', 'posicion', 'titulo']),
+                includeAndFilterByCobertura({ coberturas }, ['id', 'tipo', 'urlImagen']),
+                includeResponsible(['id', 'nombres', 'correo', 'urlImagen']),
+                filterByUsuarios({ usuarios, owner, idUsuario }),
+            ],
+        });
+        return row;
+    } catch (err) {
+        console.log(err)
+        throw new Error('Hubo un error al consultar indicadores')
+    }
 
 }
 
@@ -70,22 +74,26 @@ async function countIndicadores({ searchQuery = '', ...filters }) {
         temas = [], usuarios = [], idUsuario = null, coberturas = [], ods = [],
         activo = null, owner = null
     } = filters || {};
+    try {
 
-    const count = await Indicador.count({
-        where: {
-            ...(activo !== null && { activo }),
-            ...(searchQuery && filterBySearchQuery(searchQuery)),
-            ...(owner !== null && { owner })
-        },
-        include: [
-            includeAndFilterByObjetivos({ idObjetivo, objetivos, destacado }),
-            includeAndFilterByTemas({ temas, idTema }),
-            includeAndFilterByODS({ ods }),
-            includeAndFilterByCobertura({ coberturas }),
-            includeAndFilterByUsuarios({ idUsuario, usuarios }),
-        ]
-    })
-    return count;
+        const count = await Indicador.count({
+            where: {
+                ...(activo !== null && { activo }),
+                ...(searchQuery && filterBySearchQuery(searchQuery)),
+            },
+            include: [
+                includeAndFilterByObjetivos({ idObjetivo, objetivos, destacado }),
+                includeAndFilterByTemas({ temas, idTema }),
+                includeAndFilterByODS({ ods }),
+                includeAndFilterByCobertura({ coberturas }),
+                filterByUsuarios({ usuarios, owner, idUsuario })
+            ]
+        })
+        return count;
+    } catch (err) {
+        console.log(err)
+        throw new Error('Hubo un error al consultar número de indicadores')
+    }
 }
 
 
@@ -110,31 +118,12 @@ const filterBySearchQuery = (str) => {
 
 const getIndicadorById = async (idIndicador) => {
     const indicador = await Indicador.findByPk(idIndicador, {
-        include: [{
-            model: Tema,
-            required: false,
-            attributes: ['id', 'temaIndicador', 'color', 'codigo'],
-            through: {
-                model: IndicadorTema,
-                attributes: []
-            }
-        }, {
-            model: Objetivo,
-            as: 'objetivos',
-            required: false,
-            attributes: ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado'], 'color'],
-            through: {
-                model: IndicadorObjetivo,
-                as: 'more',
-                attributes: []
-            }
-        }, {
-            model: Cobertura,
-            attributes: ['id', 'tipo', 'descripcion', 'urlImagen']
-        }, {
-            model: Ods,
-            attributes: ['id', 'posicion', 'titulo', 'descripcion', 'urlImagen']
-        }]
+        include: [
+            includeAndFilterByTemas(null, ['id', 'temaIndicador', 'color', 'codigo']),
+            includeAndFilterByObjetivos(null, ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado'], 'color']),
+            includeAndFilterByCobertura(null, ['id', 'tipo', 'descripcion', 'urlImagen']),
+            includeAndFilterByODS(null, ['id', 'posicion', 'titulo', 'descripcion', 'urlImagen'])
+        ]
     })
     return indicador.get({ plain: true });
 }
