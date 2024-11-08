@@ -741,7 +741,7 @@ const getRandomIndicador = async (idTema) => {
 
 
 
-const includeAndFilterByObjetivos = (filterValues, attributes = []) => {
+const includeAndFilterByObjetivos = (filterValues, attributes) => {
   const { idObjetivo = null, destacado = null, objetivos = [] } = filterValues || {};
 
   const ids = [idObjetivo, ...objetivos].filter(o => o);
@@ -750,7 +750,7 @@ const includeAndFilterByObjetivos = (filterValues, attributes = []) => {
     model: Objetivo,
     as: 'objetivos',
     required: true,
-    ...(attributes === null ? { attributes: [] } : { attributes }),
+    ...(attributes !== undefined && { attributes }),
     where: {
       ...(ids.length > 0 && {
         id: ids
@@ -768,7 +768,7 @@ const includeAndFilterByObjetivos = (filterValues, attributes = []) => {
 }
 
 
-const includeAndFilterByTemas = (filterValues, attributes = []) => {
+const includeAndFilterByTemas = (filterValues, attributes) => {
   const { idTema = null, temas = [] } = filterValues || {};
 
   const ids = [idTema, ...temas].filter(t => t);
@@ -776,7 +776,7 @@ const includeAndFilterByTemas = (filterValues, attributes = []) => {
   return {
     model: Tema,
     required: true,
-    ...(attributes === null ? { attributes: [] } : { attributes }),
+    ...(attributes !== undefined && { attributes }),
     ...(ids.length > 0 && {
       where: {
         id: ids
@@ -790,34 +790,73 @@ const includeAndFilterByTemas = (filterValues, attributes = []) => {
 }
 
 
-const includeAndFilterByUsuarios = (filterValues, attributes = []) => {
-  const { idUsuario = null, usuarios = [] } = filterValues || {};
-  const ids = [idUsuario, ...usuarios].filter(u => u);
+const includeAndFilterByUsuarios = (filterValues, attributes) => {
+  const { idUsuario = null, owner = null, usuarios = [], isOwner = null } = filterValues || {};
+  const ids = [idUsuario, owner, ...usuarios].filter(u => u);
 
   return {
     model: Usuario,
     required: true,
-    ...(attributes.length > 0 && { attributes }),
-    ...(ids.length > 0 && {
-      where: {
-        id: ids
-      },
-    }),
+    as: 'usuarios',
+    ...(attributes !== undefined && { attributes }),
     through: {
       model: UsuarioIndicador,
       attributes: [],
+      where: {
+        ...(ids.length > 0 && { idUsuario: ids }),
+        ...(isOwner !== null && { isOwner }),
+      }
     }
   }
 }
 
 
-const includeAndFilterByODS = (filterValues, attributes = []) => {
+const filterByUsuarios = (filterValues = {}) => {
+  const { idUsuario = null, owner = null, usuarios = [], isOwner = null } = filterValues || {};
+  const ids = [idUsuario, owner, ...usuarios].filter(u => u);
+
+  return {
+    model: Usuario,
+    as: 'usuarios',
+    required: true,
+    attributes: [],
+    through: {
+      model: UsuarioIndicador,
+      attributes: [],
+      where: {
+        ...(ids.length > 0 && { idUsuario: ids }),
+      },
+    }
+  }
+}
+
+
+const includeResponsible = (attributes) => {
+  return {
+    model: Usuario,
+    as: 'responsible',
+    required: false,
+    ...(attributes !== undefined && { attributes }),
+    through: {
+      model: UsuarioIndicador,
+      attributes: [],
+      where: {
+        isOwner: true
+      },
+
+    }
+  }
+}
+
+
+
+const includeAndFilterByODS = (filterValues, attributes) => {
   const { ods = [] } = filterValues || {};
 
   return {
     model: Ods,
     required: false,
-    ...(attributes.length > 0 && { attributes }),
+    ...(attributes !== undefined && { attributes }),
     ...(ods.length > 0 && {
       where: {
         id: ods
@@ -827,12 +866,12 @@ const includeAndFilterByODS = (filterValues, attributes = []) => {
 }
 
 
-const includeAndFilterByCobertura = (filterValues, attributes = []) => {
+const includeAndFilterByCobertura = (filterValues, attributes) => {
   const { coberturas = [] } = filterValues || {};
   return {
     model: Cobertura,
     required: false,
-    ...(attributes.length > 0 && { attributes }),
+    ...(attributes !== undefined && { attributes }),
     ...(coberturas.length > 0 && {
       where: {
         id: {
@@ -861,5 +900,7 @@ module.exports = {
   includeAndFilterByTemas,
   includeAndFilterByODS,
   includeAndFilterByCobertura,
-  includeAndFilterByUsuarios
+  includeAndFilterByUsuarios,
+  includeResponsible,
+  filterByUsuarios
 };
