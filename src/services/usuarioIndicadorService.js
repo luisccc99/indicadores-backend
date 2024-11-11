@@ -89,24 +89,47 @@ const createRelationUsersToIndicador = async (usuarios, idIndicador, options) =>
   }
 };
 
-const changeOwner = async (idUsuario, idIndicador, updatedBy) => {
 
+const changeOwner = async (idUsuario, idIndicador, updatedBy) => {
   try {
-    await Indicador.update(
-      {
-        owner: idUsuario,
-        updatedBy,
+    const currentOwner = await UsuarioIndicador.findOne({
+      where: {
+        idIndicador,
+        isOwner: true
       },
-      {
-        where: {
-          id: idIndicador,
-        }
+      raw: true
+    });
+
+    if (idUsuario === currentOwner.idUsuario) {
+      return;
+    }
+
+    sequelize.transaction(async _t => {
+      await UsuarioIndicador.update({
+        isOwner: false
+      }, {
+        where: { id: currentOwner.id },
       });
 
-    return;
-  }
-  catch (err) {
-    throw new Error(`Error al cambiar el dueño del indicador: ${err.message}`);
+      const alreadyAssigned = await UsuarioIndicador.findOne({ where: { idUsuario, idIndicador }, raw: true });
+
+      if (alreadyAssigned) {
+        await UsuarioIndicador.update({ isOwner: true, updatedBy }, { where: { id: alreadyAssigned.id } });
+        return;
+      }
+
+      await UsuarioIndicador.create({
+        idIndicador,
+        idUsuario,
+        isOwner: true,
+        updatedBy,
+        createdBy: updatedBy,
+        expires: 'NO',
+      });
+    })
+  } catch (err) {
+    logger.error(err);
+    throw new Error('Hubo un error al cambiar responsable de este indicador')
   }
 }
 
