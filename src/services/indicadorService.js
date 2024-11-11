@@ -833,7 +833,7 @@ const filterByUsuarios = (filterValues = {}) => {
 const includeResponsible = (attributes) => {
   return {
     model: Usuario,
-    as: 'responsible',
+    as: 'responsable',
     required: false,
     ...(attributes !== undefined && { attributes }),
     through: {
