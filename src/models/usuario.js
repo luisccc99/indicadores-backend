@@ -4,14 +4,13 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class Usuario extends Model {
-        /**
-         * Helper method for defining associations.
-         * This method is not a part of Sequelize lifecycle.
-         * The `models/index` file will call this method automatically.
-         */
         static associate(models) {
+            this.belongsToMany(models.Indicador, {
+                through: models.UsuarioIndicador,
+                foreignKey: 'idUsuario',
+                otherKey: 'idIndicador'
+            });
             this.belongsTo(models.Rol, { foreignKey: 'idRol' });
-            this.belongsToMany(models.Indicador, { through: models.UsuarioIndicador, foreignKey: 'idUsuario' });
         }
     };
     Usuario.init(
@@ -70,7 +69,7 @@ module.exports = (sequelize, DataTypes) => {
                     isIn: [['SI', 'NO']]
                 }
             },
-            
+
             requestedPasswordChange: {
                 type: DataTypes.STRING(2),
                 allowNull: true,

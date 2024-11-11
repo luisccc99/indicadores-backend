@@ -1,18 +1,46 @@
 const HistoricoService = require('../services/historicoService');
 const IndicadorService = require('../services/indicadorService')
 const { getPaginationHistoricos } = require('../utils/pagination');
-
+const PublicIndicadorService = require('../services/publicIndicadorService');
+const PrivateIndicadorService = require('../services/privateIndicadorService');
 
 const getHistoricos = async (req, res, next) => {
   const { idIndicador, order, sortBy } = req.matchedData;
   const { page, perPage } = getPaginationHistoricos(req.matchedData);
+  const attributes = ['ultimoValorDisponible', 'updatedAt', 'periodicidad']
   try {
-    const { ultimoValorDisponible, updatedAt, periodicidad } = await IndicadorService.getIndicador(idIndicador, 'front'); const { historicos, total } = await HistoricoService.getHistoricos(idIndicador, page, perPage, order, sortBy);
+    const indicador = await PrivateIndicadorService.getIndicadorById(idIndicador, attributes);
+    if (!indicador) {
+      return res.status(409).json({ message: 'No se pudo consultar este indicador' })
+    }
+    
+    const { ultimoValorDisponible, updatedAt, periodicidad } = indicador;
+    const { historicos, total } = await HistoricoService.getHistoricos(idIndicador, page, perPage, order, sortBy);
+    const indicadorResponse = {
+      idIndicador,
+      indicadorLastValue: ultimoValorDisponible,
+      indicadorLastUpdateDate: updatedAt,
+      indicadorPeriodicidad: periodicidad,
+    }
     if (historicos.length > 0) {
       const totalPages = Math.ceil(total / perPage);
-      return res.status(200).json({ idIndicador: idIndicador, indicadorLastValue: ultimoValorDisponible, indicadorLastUpdateDate: updatedAt, indicadorPeriodicidad: periodicidad, page: page, perPage: perPage, total: total, totalPages: totalPages, data: historicos });
+      return res.status(200).json({
+        ...indicadorResponse,
+        page,
+        perPage,
+        total,
+        totalPages,
+        data: historicos
+      });
     } else if (historicos.length === 0) {
-      return res.status(200).json({ idIndicador: idIndicador, indicadorLastValue: ultimoValorDisponible, indicadorLastUpdateDate: updatedAt, indicadorPeriodicidad: periodicidad, page: page, perPage: perPage, total: total, totalPages: 0, data: [] });
+      return res.status(200).json({
+        ...indicadorResponse,
+        page,
+        perPage,
+        total,
+        totalPages: 0,
+        data: []
+      });
     } else {
       return res.sendStatus(400);
     }

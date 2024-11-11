@@ -4,17 +4,12 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class UsuarioIndicador extends Model {
-        /**
-         * Helper method for defining associations.
-         * This method is not a part of Sequelize lifecycle.
-         * The `models/index` file will call this method automatically.
-         */
         static associate(models) {
             this.belongsTo(models.Usuario, { foreignKey: 'idUsuario', targetKey: 'id' })
             this.belongsTo(models.Indicador, { foreignKey: 'idIndicador', targetKey: 'id' })
         }
     };
-    
+
     UsuarioIndicador.init(
         {
             id: {
@@ -78,6 +73,12 @@ module.exports = (sequelize, DataTypes) => {
                 validate: {
                     isIn: [['SI', 'NO']]
                 }
+            },
+
+            isOwner: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
             }
         },
         {

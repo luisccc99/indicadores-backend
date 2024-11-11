@@ -1,5 +1,5 @@
-const express = require('express');
-const router = express.Router();
+const promisedRouter = require('express-promise-router');
+const router = promisedRouter();
 
 const {
     paramValidationRules,

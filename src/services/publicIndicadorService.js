@@ -1,85 +1,57 @@
 const logger = require('../config/logger');
 const {
     Indicador,
-    Tema,
-    Objetivo,
-    IndicadorObjetivo,
-    IndicadorTema,
     Historico,
     Ods,
-    UsuarioIndicador,
-    Usuario,
     Formula,
     Cobertura,
     Variable,
     sequelize,
     Sequelize
 } = require('../models');
-const { includeAndFilterByObjetivos, includeAndFilterByTemas, includeAndFilterByCobertura, includeAndFilterByODS } = require('./indicadorService');
+const { includeAndFilterByObjetivos, includeAndFilterByTemas, includeAndFilterByCobertura, includeAndFilterByODS, includeResponsible } = require('./indicadorService');
 const { Op } = Sequelize;
 
 
 /**
  * 
  * @param {number} id 
+ * @param {string[]} attributes    
  * @returns indicador object
  */
-async function getIndicadorById(id) {
+async function getIndicadorById(id, attributes) {
+    const _attributes = attributes || [
+        "id", "nombre", "ultimoValorDisponible",
+        "adornment", "definicion", "anioUltimoValorDisponible",
+        "tendenciaActual", "fuente", "updatedAt",
+        "periodicidad", "archive", "unidadMedida",
+    ]
     try {
         const indicador = await Indicador.findOne({
             where: { id, activo: true },
-            attributes: [
-                "id", "nombre", "ultimoValorDisponible",
-                "adornment", "definicion", "anioUltimoValorDisponible",
-                "tendenciaActual", "fuente", "updatedAt",
-                "periodicidad", "archive", "unidadMedida",
-            ],
-            include: [{
-                model: Tema,
-                required: false,
-                attributes: ['id', 'temaIndicador', 'color', 'codigo'],
-                through: {
-                    model: IndicadorTema,
-                    attributes: []
-                }
-            }, {
-                model: Objetivo,
-                as: 'objetivos',
-                required: false,
-                attributes: ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado'], 'color'],
-                through: {
-                    model: IndicadorObjetivo,
-                    as: 'more',
-                    attributes: []
-                }
-            }, {
-                model: Formula,
-                required: false,
-                include: {
-                    model: Variable
-                }
-            }, {
-                model: Historico,
-                required: false,
-                attributes: ["anio", "valor", "fuente"],
-                limit: 5,
-                order: [["anio", "DESC"]],
-            }, {
-                model: Usuario,
-                required: false,
-                attributes: ['correo', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'descripcion', 'urlImagen'],
-                through: {
-                    model: UsuarioIndicador,
-                    // TODO ADD isOwner filter
-                    attributes: [],
+            attributes: _attributes,
+            include: [
+                includeAndFilterByTemas(null, ['id', 'temaIndicador', 'color', 'codigo']),
+                includeAndFilterByObjetivos(null, ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado'], 'color']),
+                includeResponsible(['correo', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'descripcion', 'urlImagen']),
+                {
+                    model: Cobertura,
+                    attributes: ['tipo', 'descripcion', 'urlImagen']
+                }, {
+                    model: Ods,
+                    attributes: ['posicion', 'titulo', 'descripcion', 'urlImagen']
+                }, {
+                    model: Formula,
+                    required: false,
+                    include: Variable
+                }, {
+                    model: Historico,
+                    required: false,
+                    attributes: ["anio", "valor", "fuente"],
+                    limit: 5,
+                    order: [["anio", "DESC"]],
                 },
-            }, {
-                model: Cobertura,
-                attributes: ['tipo', 'descripcion', 'urlImagen']
-            }, {
-                model: Ods,
-                attributes: ['posicion', 'titulo', 'descripcion', 'urlImagen']
-            }],
+            ],
         });
         if (!indicador) {
             return null;
@@ -134,7 +106,7 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
             includeAndFilterByODS(
                 { ods },
                 ['id', 'posicion', 'urlImagen', 'titulo']
-            )
+            ),
         ],
         order: [
             ['updatedAt', 'desc'],
@@ -215,7 +187,7 @@ const getIndicadorRelatedToObjetivo = async ({ idIndicador, idObjetivo, position
             }
         },
         include: [
-            includeAndFilterByObjetivos({ idObjetivo }, null)
+            includeAndFilterByObjetivos({ idObjetivo }, [])
         ],
         raw: true,
         nest: true
