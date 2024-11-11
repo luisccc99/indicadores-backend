@@ -249,7 +249,6 @@ const defineAttributes = (pathway, matchedData) => {
     "createdBy",
     "updatedAt",
     "periodicidad",
-    "owner",
     "archive",
     "adornment",
     "unidadMedida",
