@@ -2,14 +2,19 @@ const HistoricoService = require('../services/historicoService');
 const IndicadorService = require('../services/indicadorService')
 const { getPaginationHistoricos } = require('../utils/pagination');
 const PublicIndicadorService = require('../services/publicIndicadorService');
-
+const PrivateIndicadorService = require('../services/privateIndicadorService');
 
 const getHistoricos = async (req, res, next) => {
   const { idIndicador, order, sortBy } = req.matchedData;
   const { page, perPage } = getPaginationHistoricos(req.matchedData);
   const attributes = ['ultimoValorDisponible', 'updatedAt', 'periodicidad']
   try {
-    const { ultimoValorDisponible, updatedAt, periodicidad } = await PublicIndicadorService.getIndicadorById(idIndicador, attributes);
+    const indicador = await PrivateIndicadorService.getIndicadorById(idIndicador, attributes);
+    if (!indicador) {
+      return res.status(409).json({ message: 'No se pudo consultar este indicador' })
+    }
+    
+    const { ultimoValorDisponible, updatedAt, periodicidad } = indicador;
     const { historicos, total } = await HistoricoService.getHistoricos(idIndicador, page, perPage, order, sortBy);
     const indicadorResponse = {
       idIndicador,

@@ -116,6 +116,12 @@ const filterBySearchQuery = (str) => {
 }
 
 
+/**
+ * 
+ * @param {number} idIndicador 
+ * @param {string[]} attributes 
+ * @returns 
+ */
 const getIndicadorById = async (idIndicador, attributes) => {
     const indicador = await Indicador.findByPk(idIndicador, {
         ...(attributes !== undefined && { attributes }),
