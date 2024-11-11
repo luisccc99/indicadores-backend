@@ -116,13 +116,15 @@ const filterBySearchQuery = (str) => {
 }
 
 
-const getIndicadorById = async (idIndicador) => {
+const getIndicadorById = async (idIndicador, attributes) => {
     const indicador = await Indicador.findByPk(idIndicador, {
+        ...(attributes !== undefined && { attributes }),
         include: [
             includeAndFilterByTemas(null, ['id', 'temaIndicador', 'color', 'codigo']),
             includeAndFilterByObjetivos(null, ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado'], 'color']),
             includeAndFilterByCobertura(null, ['id', 'tipo', 'descripcion', 'urlImagen']),
-            includeAndFilterByODS(null, ['id', 'posicion', 'titulo', 'descripcion', 'urlImagen'])
+            includeAndFilterByODS(null, ['id', 'posicion', 'titulo', 'descripcion', 'urlImagen']),
+            includeResponsible(['id', 'nombres', 'correo']),
         ]
     })
     return indicador.get({ plain: true });
