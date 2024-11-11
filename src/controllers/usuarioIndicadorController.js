@@ -1,6 +1,7 @@
 const UsuarioIndicadorService = require('../services/usuarioIndicadorService');
 const ProtectedIndicadorService = require('../services/protectedIndicadorService');
 const { getUsuariosByBulk } = require('../services/usuariosService');
+const PrivateIndicadorService = require('../services/privateIndicadorService');
 
 const createRelationUI = async (req, res, next) => {
     const { ids, idIndicador } = req.matchedData;
@@ -17,43 +18,6 @@ const createRelationUI = async (req, res, next) => {
                 createdBy
             }
         );
-
-        // if (relationType === 'usuarios') {
-        //     await UsuarioIndicadorService.createRelation(
-        //         [...relationIds],
-        //         [id],
-        //         {
-        //             fechaDesde: desde ? desde : null,
-        //             fechaHasta: hasta ? hasta : null,
-        //             updatedBy,
-        //             createdBy,
-        //             expires
-        //         });
-        // } else if (relationType === 'indicadores') {
-        //     await UsuarioIndicadorService.createRelation(
-        //         [id],
-        //         [...relationIds],
-        //         {
-        //             fechaDesde: desde ? desde : null,
-        //             fechaHasta: hasta ? hasta : null,
-        //             updatedBy,
-        //             createdBy,
-        //             expires
-        //         });
-        // } else if (relationType === 'temas') {
-        //     const indicadores = await UsuarioIndicadorService.createRelationWithModules(id);
-        //     const indicadoresId = indicadores.map(indicador => indicador.id);
-        //     await UsuarioIndicadorService.createRelation(
-        //         [...relationIds],
-        //         indicadoresId,
-        //         {
-        //             fechaDesde: desde ? desde : null,
-        //             fechaHasta: hasta ? hasta : null,
-        //             updatedBy,
-        //             createdBy,
-        //             expires
-        //         });
-        // }
         return res.sendStatus(201);
 
     } catch (err) {
@@ -124,23 +88,17 @@ const getIndicadoresRelations = async (req, res, next) => {
 };
 
 const getRelationUsers = async (req, res, next) => {
-    const { idIndicador } = req.matchedData;
-    const attributes = ['nombre', 'owner']
+    const { idIndicador, page, perPage } = req.matchedData;
+    const attributes = ['nombre'];
 
-    const page = req.matchedData.page || 1;
-    const perPage = req.matchedData.perPage || 25;
+    const { data, total } = await UsuarioIndicadorService.getRelationUsers(perPage, (page - 1) * perPage, idIndicador);
 
-    try {
-        const { data, total } = await UsuarioIndicadorService.getRelationUsers(perPage, (page - 1) * perPage, idIndicador);
+    const totalPages = Math.ceil(total / perPage);
 
-        const totalPages = Math.ceil(total / perPage);
-
-        const { nombre, owner } = await ProtectedIndicadorService.getIndicador(idIndicador, attributes);
-
-        return res.status(200).json({ data, page, perPage, total, totalPages, nombre, owner });
-    } catch (err) {
-        next(err);
-    }
+    const { nombre, responsable } = await PrivateIndicadorService.getIndicadorById(idIndicador, attributes)
+    const owner = responsable.length > 0 ? responsable[0].id : null;
+    
+    return res.status(200).json({ data, page, perPage, total, totalPages, nombre, owner });
 };
 
 const getUsuarios = async (req, res, next) => {
