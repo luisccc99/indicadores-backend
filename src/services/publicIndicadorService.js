@@ -16,18 +16,20 @@ const { Op } = Sequelize;
 /**
  * 
  * @param {number} id 
+ * @param {string[]} attributes    
  * @returns indicador object
  */
-async function getIndicadorById(id) {
+async function getIndicadorById(id, attributes) {
+    const _attributes = attributes || [
+        "id", "nombre", "ultimoValorDisponible",
+        "adornment", "definicion", "anioUltimoValorDisponible",
+        "tendenciaActual", "fuente", "updatedAt",
+        "periodicidad", "archive", "unidadMedida",
+    ]
     try {
         const indicador = await Indicador.findOne({
             where: { id, activo: true },
-            attributes: [
-                "id", "nombre", "ultimoValorDisponible",
-                "adornment", "definicion", "anioUltimoValorDisponible",
-                "tendenciaActual", "fuente", "updatedAt",
-                "periodicidad", "archive", "unidadMedida",
-            ],
+            attributes: _attributes,
             include: [
                 includeAndFilterByTemas(null, ['id', 'temaIndicador', 'color', 'codigo']),
                 includeAndFilterByObjetivos(null, ['id', 'titulo', [sequelize.literal('"objetivos->more"."destacado"'), 'destacado'], 'color']),
