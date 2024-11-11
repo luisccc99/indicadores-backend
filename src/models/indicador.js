@@ -138,12 +138,6 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: null
             },
 
-            owner: {
-                type: DataTypes.INTEGER,
-                allowNull: true,
-                defaultValue: 1
-            },
-
             archive: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
