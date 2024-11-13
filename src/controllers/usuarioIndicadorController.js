@@ -65,6 +65,7 @@ const getRelationInformation = async (data) => {
     return { usuarios };
 };
 
+/** @deprecated */
 const getIndicadoresRelations = async (req, res, next) => {
     const page = req.matchedData.page || 1;
     const perPage = req.matchedData.perPage || 10;
@@ -104,7 +105,7 @@ const getRelationUsers = async (req, res, next) => {
 const getUsuarios = async (req, res, next) => {
     const { idIndicador } = req.matchedData;
     try {
-        const result = await UsuarioIndicadorService.getUsuariosThatDoesntHaveIndicador(idIndicador);
+        const result = await UsuarioIndicadorService.getUsuariosThatDontHaveIndicador(idIndicador);
         return res.status(200).json(result);
     }
     catch (err) {

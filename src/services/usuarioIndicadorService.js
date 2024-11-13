@@ -143,7 +143,6 @@ const getUsuariosIndicadores = async (page, perPage, matchedData) => {
           model: Indicador,
           required: true,
           where: getAllRelationsFilters(matchedData),
-          attributes: ['owner'],
         },
       ],
       attributes: [
@@ -154,7 +153,6 @@ const getUsuariosIndicadores = async (page, perPage, matchedData) => {
       group: [
         'indicador.id',
         'indicador.nombre',
-        'indicador.owner',
         'indicador.updatedAt',
       ],
     });
@@ -206,7 +204,7 @@ const getRelationUsers = async (limit, offset, idIndicador) => {
   }
 };
 
-const getUsuariosThatDoesntHaveIndicador = async (idIndicador) => {
+const getUsuariosThatDontHaveIndicador = async (idIndicador) => {
   try {
     const idUsuarios = await sequelize.query(`SELECT "idUsuario" FROM "UsuarioIndicadores" WHERE "idIndicador" = ${idIndicador};
     `, { raw: true, type: sequelize.QueryTypes.SELECT });
@@ -296,7 +294,7 @@ module.exports = {
   createRelation,
   getUsuariosIndicadores,
   getRelationUsers,
-  getUsuariosThatDoesntHaveIndicador,
+  getUsuariosThatDontHaveIndicador,
   deleteRelation,
   updateRelation,
   createRelationWithModules,
