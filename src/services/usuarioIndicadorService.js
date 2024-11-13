@@ -12,12 +12,6 @@ const isUsuarioAssignedToIndicador = async (idUsuario, idIndicador) => {
         idUsuario,
         idIndicador,
         activo: 'SI',
-        [Op.or]: {
-          fechaHasta: {
-            [Op.gte]: Sequelize.literal('CURRENT_DATE')
-          },
-          expires: 'NO'
-        }
       },
       attributes: [
         [Sequelize.fn('COUNT', 'id'), 'count']
@@ -192,7 +186,7 @@ const getRelationUsers = async (limit, offset, idIndicador) => {
         }
       ],
       attributes: [
-        'id', 'idUsuario', 'fechaDesde', 'fechaHasta', 'expires', 'createdBy', 'createdAt',
+        'id', 'idUsuario', 'createdBy', 'createdAt',
         [sequelize.literal('"indicador"."nombre"'), "indicador"],
       ],
     });

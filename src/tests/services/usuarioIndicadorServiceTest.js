@@ -55,8 +55,6 @@ describe('Usuario-Indicador service', function () {
       const createFake = sinon.fake.resolves(true);
       sinon.replace(UsuarioIndicador, 'bulkCreate', createFake);
       return UsuarioIndicadorService.createRelation([1], [1], {
-        fechaDesde: desde,
-        fechaHasta: hasta,
         updatedBy: 1,
         createdBy: 1,
         expires: 'SI'
@@ -69,11 +67,8 @@ describe('Usuario-Indicador service', function () {
       const createFake = sinon.fake.resolves(true);
       sinon.replace(UsuarioIndicador, 'bulkCreate', createFake);
       return UsuarioIndicadorService.createRelation([1], [1, 2], {
-        // fechaDesde: new Date(),
-        // fechaHasta: new Date(),
         updatedBy: 1,
         createdBy: 1,
-        expires: 'NO'
       }).then(_ => {
         expect(createFake.calledOnce).to.be.true;
       })

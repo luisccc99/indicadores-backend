@@ -509,11 +509,8 @@ const getFiltersForIndicadores = (queryParams) => {
 const assignIndicadorToUsuario = async (idIndicador, idUsuario) => {
   return createRelation(
     [idUsuario], [idIndicador], {
-    fechaDesde: null,
-    fechaHasta: null,
     updatedBy: idUsuario,
     createdBy: idUsuario,
-    expires: 'NO'
   })
 }
 
