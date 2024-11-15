@@ -1,6 +1,7 @@
 const schedule = require('node-schedule');
 const { Indicador, UsuarioIndicador, Usuario } = require('../models');
 const { differenceInMonths } = require('date-fns');
+const sender = require('./mailSender');
 
 const checkForUpdates = async (err, req, res, next) => {
     schedule.scheduleJob(' */1 * * * *', async () => {
@@ -64,9 +65,10 @@ const checkForUpdates = async (err, req, res, next) => {
             });
             const indicadoresNamesString = indicadoresNames.join(', ');
             const salutation = splitNameKeepFirstOne(nombres);
-            sendEmail(indicadoresNames, indicadoresNamesString, salutation, indicadoresAndExpirationDate);
+            sendEmail(nombres, correo, indicadoresNames, indicadoresNamesString, salutation, indicadoresAndExpirationDate);
         });
     });
+
     return 1;
 };
 
@@ -74,9 +76,16 @@ const needsUpdate = (monthDifference, periodicidad, notified, notifiedAt) => {
     return monthDifference >= periodicidad && !notified;
 }
 
-const sendEmail = (indicadoresNames, indicadoresNamesString, salutation, indicadoresAndExpirationDate) => {
-    console.log(indicadoresAndExpirationDate)
+const sendEmail = async (nombres, correo, indicadoresNames, indicadoresNamesString, salutation, indicadoresAndExpirationDate) => {
+
+    await sender(
+        correo,
+        'Indicadores pendientes de actualización 🦂',
+        salutation,
+        '<h1>nothing to do here</h1>'
+    )
 }
+
 
 const splitNameKeepFirstOne = (name) => {
     return name.split(' ')[0];
