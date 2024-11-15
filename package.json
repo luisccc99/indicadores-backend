@@ -23,6 +23,7 @@
     "express-promise-router": "^4.1.1",
     "express-rate-limit": "^6.7.0",
     "express-validator": "^6.14.2",
+    "fflip": "^4.0.0",
     "handlebars": "^4.7.7",
     "helmet": "^6.0.1",
     "json2csv": "^5.0.7",
