@@ -105,9 +105,8 @@ app.use('/uploads/usuarios/images', express.static(path.join(__dirname, 'uploads
 app.use('/uploads/mapas', express.static(path.join(__dirname, 'uploads', 'mapas')));
 app.use(logErrors)
 
-scheduler();
+// scheduler();
 
-sender();
 const server = app.listen(PORT, () => logger.info(`App starting on port ${PORT}`));
 
 
