@@ -19,8 +19,8 @@ const getPublicIndicador = async (req, res, next) => {
   const { idIndicador } = req.matchedData;
   const indicador = await PublicIndicadorService.getIndicadorById(idIndicador);
 
-  if (!indicador?.activo) {
-    return res.status(409).json({ status: 409, message: `El indicador con id ${idIndicador} se encuentra inactivo` });
+  if (!indicador) {
+    return res.status(409).json({ status: 409, message: 'Hubo un error al consultar este indicador' });
   }
 
   const related = await PublicIndicadorService.getIndicadoresRelacionadosTo(idIndicador);
@@ -34,7 +34,7 @@ const generateFile = async (req, res, next) => {
   let indicador = await PublicIndicadorService.getIndicadorById(idIndicador);
 
   if (!indicador) {
-    return res.status(409).json({ status: 409, message: `El indicador con id ${idIndicador} se encuentra inactivo` });
+    return res.status(409).json({ status: 409, message: 'Hubo un error al consultar este indicador' });
   }
 
   const filename = `${indicador.nombre}.${format}`
