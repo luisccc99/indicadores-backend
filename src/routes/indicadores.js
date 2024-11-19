@@ -25,6 +25,8 @@ const {
   updateIndicadorStatus,
   getUsersFromIndicador,
   getPublicIndicador,
+  getObjetivosStatusForIndicador,
+  updateDestacadoStatus,
 } = require('../controllers/indicadorController');
 const { verifyJWT, verifyUserHasRoles, verifyUserIsActive } = require('../middlewares/auth');
 const { determinePathway, SITE_PATH, FRONT_PATH, determineModel } = require('../middlewares/determinePathway');
@@ -44,7 +46,7 @@ const { createHistoricoValidationRules } = require('../middlewares/validator/his
 const { updateIndicadorCatalogos } = require('../middlewares/validator/catalogoValidator');
 const promisedRouter = require('express-promise-router');
 const { verifyUserCanPerformActionOnIndicador } = require('../middlewares/verifyUserCanPerformAction');
-const { param } = require('express-validator');
+const { param, body } = require('express-validator');
 const router = promisedRouter()
 
 /**
@@ -243,63 +245,6 @@ router.get('/:idIndicador/usuarios',
   validate,
   exists('idIndicador', 'Indicador'),
   getUsersFromIndicador
-)
-
-
-/**
- * @swagger
- *   /indicadores/{idIndicador}/catalogos:
- *     get:
- *       summary: Retrieve the catalogos associated to an indicador.
- *       tags: [Indicadores]
- *       security: 
- *         - bearer: []
- *       parameters:
- *         - in: path
- *           name: idIndicador
- *           required: true
- *           schema:
- *             type: integer
- *             format: int64
- *       responses:
- *         200:
- *           description: List of catalogos.
- *           content:
- *             application/json:
- *               schema:
- *                 type: object
- *                 properties:
- *                   data:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: integer
- *                         idIndicador:
- *                           type: integer
- *                         idCatalogoDetail:
- *                           type: integer
- *                         descripcion: 
- *                           type: string
- *                         idCatalogo:
- *                           type: integer
- *         401:
- *           $ref: '#/components/responses/Unauthorized'
- *         403:
- *           $ref: '#/components/responses/Forbidden'
- *         422:
- *           $ref: '#components/responses/UnprocessableEntity'
- *         429:
- *           $ref: '#components/responses/TooManyRequests'
- *         500:
- *           $ref: '#components/responses/InternalServerError'
- */
-router.get('/:idIndicador/catalogos',
-  paramValidationRules(),
-  validate,
-  exists('idIndicador', 'Indicador'),
-  getCatalogosFromIndicador
 )
 
 
@@ -524,7 +469,7 @@ router.get('/',
   GeneralValidator.paginationValidationRules(),
   GeneralValidator.searchQueryRule(),
   IndicadorValidator.privateFilterRules(),
-  validate, 
+  validate,
   getIndicadores
 );
 
@@ -849,6 +794,25 @@ router.patch('/:idIndicador/catalogo',
   verifyUserHasRoles(['ADMIN', 'USER']),
   verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
   updateOrCreateCatalogFromIndicador,
+)
+
+
+router.post('/:idIndicador/objetivos/status',
+  idValidation(),
+  body('objetivos.*.id').isInt().toInt(),
+  body('objetivos.*.destacado').isBoolean().toBoolean(),
+  validate,
+  verifyJWT,
+  verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
+  updateDestacadoStatus
+)
+
+
+router.get('/:idIndicador/objetivos/status',
+  idValidation(),
+  validate,
+  verifyJWT,
+  getObjetivosStatusForIndicador
 )
 
 module.exports = router;

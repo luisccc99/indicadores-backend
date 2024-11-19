@@ -64,6 +64,7 @@ async function getIndicadorById(id, attributes) {
     }
 }
 
+
 /**
 * @param {Object} args
 * @param {number} args.page
@@ -73,6 +74,7 @@ async function getIndicadorById(id, attributes) {
 * @param {number} args.filters.idObjetivo
 * @param {boolean} args.filters.destacado
 * @param {number[]} args.filters.temas
+* @param {number} args.filters.idTema
 * @param {number[]} args.filters.coberturas
 * @param {number[]} args.filters.ods
 * @returns {Promise<Array>} list of indicadores 
@@ -114,8 +116,6 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
         ],
 
     });
-
-
     return rows;
 }
 

@@ -5,10 +5,11 @@ const IndicadorService = require("../services/indicadorService")
 const { generateCSV, generateXLSX, generatePDF } = require("../services/fileService");
 const UsuarioService = require('../services/usuariosService');
 const { getImagePathLocation } = require('../utils/stringFormat');
+const { MAX_INDICADORES_DESTACADOS_PER_OBJETIVO } = IndicadorService;
 
 
 const getIndicador = async (req, res, next) => {
-  const { idIndicador} = req.matchedData;
+  const { idIndicador } = req.matchedData;
   const indicador = await PrivateIndicadorService.getIndicadorById(idIndicador);
   return res.status(200).json({ data: indicador });
 }
@@ -19,7 +20,7 @@ const getPublicIndicador = async (req, res, next) => {
   const indicador = await PublicIndicadorService.getIndicadorById(idIndicador);
 
   if (!indicador) {
-    return res.status(409).json({ status: 409, message: `El indicador con id ${idIndicador} se encuentra inactivo` });
+    return res.status(409).json({ status: 409, message: 'Hubo un error al consultar este indicador' });
   }
 
   const related = await PublicIndicadorService.getIndicadoresRelacionadosTo(idIndicador);
@@ -33,9 +34,9 @@ const generateFile = async (req, res, next) => {
   let indicador = await PublicIndicadorService.getIndicadorById(idIndicador);
 
   if (!indicador) {
-    return res.status(409).json({ status: 409, message: `El indicador con id ${idIndicador} se encuentra inactivo` });
+    return res.status(409).json({ status: 409, message: 'Hubo un error al consultar este indicador' });
   }
-  
+
   const filename = `${indicador.nombre}.${format}`
   res.header('Content-disposition', 'attachment');
   res.attachment(filename)
@@ -127,7 +128,7 @@ const getIndicadoresOfObjetivo = async (req, res, _next) => {
   if (page === 1) {
     destacados = await PublicIndicadorService.getIndicadores({
       ...filters,
-      perPage: IndicadorService.LIMIT_NUMBER_INDICADORES_PER_OBJETIVO,
+      perPage: IndicadorService.MAX_INDICADORES_DESTACADOS_PER_OBJETIVO,
       offset: 0,
       searchQuery,
       destacado: true,
@@ -178,7 +179,6 @@ const createIndicador = async (req, res, next) => {
   const indicador = req.matchedData;
   indicador.createdBy = req.sub;
   indicador.updatedBy = req.sub;
-  indicador.owner = req.sub;
   indicador.mapa = { ...indicador?.mapa, ...image };
   const savedIndicador = await IndicadorService.createIndicador(indicador);
   return res.status(201).json({ data: savedIndicador });
@@ -186,11 +186,9 @@ const createIndicador = async (req, res, next) => {
 };
 
 const updateIndicador = async (req, res, next) => {
-  const { idIndicador, ...indicador } = req.matchedData;
-  indicador.updatedBy = req.sub;
-
-  await IndicadorService.updateIndicador(idIndicador, indicador);
-
+  const { idIndicador, ...values } = req.matchedData;
+  values.updatedBy = req.sub;
+  await IndicadorService.updateIndicador(idIndicador, values);
   return res.sendStatus(204);
 };
 
@@ -222,6 +220,45 @@ const getRandomIndicador = async (req, res, next) => {
 };
 
 
+const updateDestacadoStatus = async (req, res, next) => {
+  const { idIndicador, objetivos } = req.matchedData;
+  const objetivosIds = objetivos.map(o => o.id)
+
+  await IndicadorService.verifyIndicadorHasRelationWithObjetivos(idIndicador, objetivosIds);
+
+  const toDestacar = objetivos.filter(o => o.destacado).map(o => o.id);
+
+  const objetivosWithDestacadosCount = await IndicadorService.getDestacadosCountPerObjetivo(toDestacar, idIndicador);
+  const objetivosAtDestacadosLimit = objetivosWithDestacadosCount.filter(o => {
+    return parseInt(o.destacadosCount) === MAX_INDICADORES_DESTACADOS_PER_OBJETIVO
+  }).map(o => o.idObjetivo)
+
+  if (objetivosAtDestacadosLimit.length > 0) {
+    const destacados = await IndicadorService.getIndicadoresDestacados(objetivosAtDestacadosLimit)
+
+    return res.status(409).json({
+      message: 'Los siguientes objetivos llegaron al límite de indicadores destacados',
+      data: destacados
+    })
+  }
+
+  await IndicadorService.updateDestacadoStatusOfIndicadorInObjetivos(idIndicador, objetivos);
+
+  return res.status(200).json({
+    message: 'Relación entre indicador y objetivos actualizada con éxito'
+  });
+}
+
+
+const getObjetivosStatusForIndicador = async (req, res, next) => {
+  const { idIndicador } = req.matchedData;
+  const objetivos = await IndicadorService.getObjetivosStatusForIndicador(idIndicador);
+  return res.status(200).json({
+    data: objetivos
+  })
+}
+
+
 module.exports = {
   getIndicadores,
   getIndicador,
@@ -234,5 +271,7 @@ module.exports = {
   getRandomIndicador,
   getPublicIndicadores,
   getPublicIndicador,
-  generateFile
+  generateFile,
+  updateDestacadoStatus,
+  getObjetivosStatusForIndicador
 }

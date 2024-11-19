@@ -20,7 +20,7 @@ const { updateIndicadorObjetivos } = require("./indicadorObjetivosService");
 const logger = require("../config/logger");
 const { Op } = Sequelize;
 
-const MAX_INDICADORES_PER_OBJETIVO = 5;
+const MAX_INDICADORES_DESTACADOS_PER_OBJETIVO = 5;
 
 
 const getInactiveIndicadores = async () => {
@@ -109,27 +109,25 @@ const getIndicadorStatus = async (id) => {
 }
 
 
-const updateIndicador = async (id, indicador) => {
-  const { temas = [], objetivos = [], ...values } = indicador;
+const updateIndicador = async (id, values) => {
+  const { temas = [], objetivos = [], ..._values } = values;
 
   try {
     sequelize.transaction(async _t => {
-
       if (temas.length > 0) {
-        const temasIds = temas.map(tema => tema.id);
-        await updateIndicadorTemas(id, temasIds);
+        await updateIndicadorTemas(id, temas.map(tema => tema.id));
       }
 
       if (objetivos.length > 0) {
-        const objetivosIds = objetivos.map(objetivo => objetivo.id);
-        await updateIndicadorObjetivos(id, objetivosIds);
+        await updateIndicadorObjetivos(id, objetivos.map(objetivo => objetivo.id));
       }
 
-      await Indicador.update(values, { where: { id } });
+      await Indicador.update(_values, { where: { id } });
     })
 
     return;
   } catch (err) {
+    logger.error(err)
     throw new Error(`Error al actualizar indicador: ${err.message}`);
   }
 };
@@ -315,6 +313,134 @@ const includeAndFilterByCobertura = (filterValues, attributes) => {
 }
 
 
+const updateDestacadoStatusOfIndicadorInObjetivos = async (idIndicador, objetivosWithDestacadoStatus) => {
+  try {
+    await sequelize.transaction(_t = async () => {
+      for (const objetivo of objetivosWithDestacadoStatus) {
+        await IndicadorObjetivo.update({
+          destacado: objetivo.destacado
+        }, {
+          where: {
+            idIndicador,
+            idObjetivo: objetivo.id
+          }
+        })
+      }
+    })
+  } catch (err) {
+    logger.error(err)
+    throw new Error('Hubo un error al destacar indicador en objetivos')
+  }
+
+}
+
+
+/**
+ * Verifies Indicador is related to all Objetivos in objetivosDestacados, throws error if they're not related
+ * @param {number} idIndicador 
+ * @param {number[]} objetivosToDestacar 
+ */
+const verifyIndicadorHasRelationWithObjetivos = async (idIndicador, objetivosToDestacar) => {
+  const relatedObjetivos = await Objetivo.findAll({
+    attributes: ['id', 'titulo'],
+    where: { id: objetivosToDestacar },
+    include: {
+      model: Indicador,
+      attributes: [],
+      where: {
+        id: idIndicador,
+      },
+      through: {
+        model: IndicadorObjetivo,
+        attributes: [],
+      }
+    },
+    raw: true,
+  })
+
+  if (relatedObjetivos.length === objetivosToDestacar.length) return;
+  const notRelated = []
+  for (const objetivo of objetivosToDestacar) {
+    if (relatedObjetivos.find(o => o.id === objetivo)) continue;
+    notRelated.push(objetivo)
+  }
+  const notRelatedObjetivos = await Objetivo.findAll({
+    attributes: ['titulo'],
+    where: { id: notRelated }
+  })
+  const titulos = notRelatedObjetivos.map(o => `'${o.titulo}'`).join(', ')
+  const objetivoWord = notRelated.length > 1 ? notRelated.length + ' objetivos' : 'objetivo'
+  const message = `Indicador no está relacionado con ${objetivoWord} ${titulos}. Asigna indicador a estos objetivos antes de destacarlo.`
+  throw new Error(message)
+}
+
+
+const getDestacadosCountPerObjetivo = async (objetivos, idIndicador) => {
+  return IndicadorObjetivo.findAll({
+    attributes: [
+      'idObjetivo',
+      [sequelize.literal('"objetivo"."titulo"'), 'titulo'],
+      [sequelize.fn('COUNT', 'destacado'), 'destacadosCount']
+    ],
+    where: {
+      idObjetivo: objetivos,
+      destacado: true,
+      idIndicador: {
+        [Op.notIn]: [idIndicador]
+      }
+    },
+    include: {
+      model: Objetivo,
+      attributes: [],
+    },
+    group: ['idObjetivo', 'titulo'],
+    raw: true
+  })
+}
+
+
+const getIndicadoresDestacados = async (objetivos) => {
+  const objetivosWithCount = await Objetivo.findAll({
+    attributes: ['id', 'titulo'],
+    where: {
+      id: objetivos,
+    },
+    include: [{
+      model: Indicador,
+      attributes: ['id', 'nombre'],
+      through: {
+        model: IndicadorObjetivo,
+        attributes: ['destacado'],
+        where: {
+          destacado: true
+        }
+      }
+    }]
+  })
+
+  return objetivosWithCount
+}
+
+
+const getObjetivosStatusForIndicador = (idIndicador) => {
+  return IndicadorObjetivo.findAll({
+    attributes: [
+      [sequelize.literal('"objetivo"."id"'), 'idObjetivo'],
+      [sequelize.literal('"objetivo"."titulo"'), 'titulo'],
+      'destacado'
+    ],
+    where: {
+      idIndicador
+    },
+    include: [{
+      model: Objetivo,
+      attributes: []
+    }],
+    raw: true
+  })
+}
+
+
 module.exports = {
   createIndicador,
   updateIndicador,
@@ -322,12 +448,17 @@ module.exports = {
   getInactiveIndicadores,
   getIdIndicadorRelatedTo,
   getRandomIndicador,
-  MAX_INDICADORES_PER_OBJETIVO,
+  MAX_INDICADORES_DESTACADOS_PER_OBJETIVO,
   includeAndFilterByObjetivos,
   includeAndFilterByTemas,
   includeAndFilterByODS,
   includeAndFilterByCobertura,
   includeAndFilterByUsuarios,
   includeResponsible,
-  filterByUsuarios
+  filterByUsuarios,
+  verifyIndicadorHasRelationWithObjetivos,
+  getDestacadosCountPerObjetivo,
+  updateDestacadoStatusOfIndicadorInObjetivos,
+  getIndicadoresDestacados,
+  getObjetivosStatusForIndicador
 };
