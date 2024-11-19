@@ -53,7 +53,7 @@ const createIndicador = async (indicador) => {
       );
       await assignIndicadorToObjetivo(created.id, idObjetivo)
       await assignIndicadorToTemas(created.id, temas)
-      await assignIndicadorToUsuario(created.id, indicador.createdBy)
+      await assignOwnerToIndicador(indicador.createdBy, created.id)
       return created;
     })
 
@@ -65,14 +65,15 @@ const createIndicador = async (indicador) => {
   }
 };
 
-const assignIndicadorToUsuario = async (idIndicador, idUsuario) => {
+const assignOwnerToIndicador = async (idUsuario, idIndicador) => {
   return createRelation(
     [idUsuario], [idIndicador], {
     fechaDesde: null,
     fechaHasta: null,
     updatedBy: idUsuario,
     createdBy: idUsuario,
-    expires: 'NO'
+    expires: 'NO',
+    isOwner: true,
   })
 }
 
