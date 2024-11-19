@@ -133,7 +133,7 @@ const getIndicadorById = async (idIndicador, attributes) => {
             includeResponsible(['id', 'nombres', 'correo']),
         ]
     })
-    return indicador.get({ plain: true });
+    return indicador?.get({ plain: true });
 }
 
 
