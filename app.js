@@ -80,7 +80,6 @@ app.use('/api/v1/usuarios', require('./src/routes/usuarios'));
 app.use('/api/v1/roles', require('./src/routes/roles'));
 app.use('/api/v1/temas', require('./src/routes/temas'));
 app.use('/api/v1/indicadores', require('./src/routes/indicadores'));
-app.use('/api/v1/catalogos', require('./src/routes/catalogos'));
 app.use('/api/v1/documentos', require('./src/routes/documentos'));
 app.use('/api/v1/me', require('./src/routes/me'));
 app.use('/api/v1/historicos', require('./src/routes/historicos'));
