@@ -1,12 +1,12 @@
 {
-  "name": "Indicadores REST API",
+  "name": "indicadores-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
     "test": "cross-env NODE_ENV=test mocha --require src/config/fixtures.cjs src/tests/**/*.js",
-    "dev": "cross-env NODE_ENV=development nodemon app.js",
-    "start": "node app.js"
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",

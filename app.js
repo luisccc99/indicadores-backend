@@ -105,8 +105,4 @@ app.use(logErrors)
 
 // scheduler();
 
-const server = app.listen(PORT, () => logger.info(`App starting on port ${PORT}`));
-
-
-
-module.exports = { server, app };
+module.exports = { app };
