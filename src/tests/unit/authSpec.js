@@ -6,7 +6,7 @@ const bcrypt = require("bcryptjs");
 const { aUser } = require("../../utils/factories");
 const sinon = require("sinon");
 
-describe("Auth controller", function () {
+describe.only("Auth controller (Unit Tests)", function () {
 
   let req, res, next;
   let statusStub, jsonStub;
@@ -21,7 +21,7 @@ describe("Auth controller", function () {
 
     this.beforeEach(function () {
       next = sinon.spy();
-      usuario = { ...aUser(1), activo: 'SI' };
+      usuario = { ...aUser(1), activo: true };
       getUsuarioFake = sinon.stub();
       statusStub = sinon.stub().returnsThis();
       jsonStub = sinon.stub().returnsArg(0);
@@ -109,7 +109,7 @@ describe("Auth controller", function () {
 
     describe('When user exist but has invalid state', function () {
       it("Should fail because user is not active", function () {
-        getUsuarioFake = sinon.fake.resolves({ usuario, activo: 'NO' });
+        getUsuarioFake = sinon.fake.resolves({ usuario, activo: false });
         const { login } = proxyquire('../../controllers/authController', {
           '../services/usuariosService': {
             getUsuarioByCorreo: getUsuarioFake
@@ -126,6 +126,13 @@ describe("Auth controller", function () {
           });
       });
     })
+  })
+
+  describe('generate password recovery token', () => {
+  })
+
+  describe('handle password recovery token', () => {
+
   })
 
 });
