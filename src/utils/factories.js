@@ -39,7 +39,7 @@ const anIndicador = (id, options) => {
 		Tema: temaInteres,
 		objetivo: null,
 	}, {
-		include: [Tema, Objetivo, { model: CatalogoDetail, as: 'catalogos' }]
+		include: [Tema, { model: Objetivo, as: 'objetivos' }]
 	})
 	indicador.validate()
 	return indicador;
@@ -100,7 +100,7 @@ const aUser = (id) => ({
 	apellidoMaterno: faker.name.lastName(),
 	correo: faker.internet.email(),
 	clave: faker.internet.password(8, false),
-	activo: 'SI',
+	activo: true,
 	idRol: 1,
 	requestedPasswordChange: id % 2 === 0 ? 'SI' : 'NO',
 });

@@ -29,7 +29,8 @@ const registerValidationRules = () => [
     body('activo')
         .optional()
         .toUpperCase()
-        .isIn(['SI', 'NO'])
+        .isBoolean()
+        .toBoolean()
         .withMessage('estado invalido'),
 
     body('idRol')

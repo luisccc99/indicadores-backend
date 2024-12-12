@@ -147,7 +147,7 @@ const getUsuariosByBulk = async (ids) => {
 
 const countInactiveUsers = async () => {
     try {
-        const inactiveCount = await Usuario.count({ where: { activo: 'NO' } });
+        const inactiveCount = await Usuario.count({ where: { activo: false } });
         return inactiveCount;
     } catch (err) {
         throw new Error(`Error al contar usuarios inactivos ${err.message}`);
@@ -193,7 +193,7 @@ const getIndicadoresFromUser = async (id) => {
             attributes: [],
             where: {
                 id,
-                activo: 'SI'
+                activo: true
             },
             include: {
                 model: Indicador,
@@ -226,7 +226,7 @@ const getIndicadoresFromUser = async (id) => {
 const toggleStatus = async (id) => {
     try {
         const usuario = await Usuario.findOne({ where: { id }, attributes: ['activo'] });
-        const nuevoEstado = usuario.activo === 'SI' ? 'NO' : 'SI';
+        const nuevoEstado = usuario.activo ? false : true;
 
         const updateUsuario = await Usuario.update(
             { activo: nuevoEstado },
@@ -295,7 +295,7 @@ const getUserStatsInfo = async (id) => {
         const usuariosCount = await Usuario.count({});
         const usuariosInactivosCount = await Usuario.count({
             where: {
-                activo: 'NO'
+                activo: false
             }
         });
 

@@ -22,7 +22,7 @@ const login = async (req, res, next) => {
       return res.status(401).json({ message: "Credenciales invalidas" });
     }
 
-    if (existingUser.activo === 'NO') {
+    if (!existingUser.activo) {
       return res.status(403).json({
         message: "La cuenta se encuentra deshabilitada"
       });

@@ -12,7 +12,7 @@ module.exports = {
       nombres: 'John',
       apellidoPaterno: 'Doe',
       descripcion: 'Usuario de sistema de indicadores',
-      activo: 'SI',
+      activo: true,
       createdAt: new Date(),
       updatedAt: new Date(),
       idRol: 1,
@@ -31,7 +31,7 @@ module.exports = {
         apellidoMaterno: lastName,
         descripcion: faker.lorem.words(5),
         urlImagen: 'https://lorempokemon.fakerapi.it/pokemon/200/280',
-        activo: i % 2 === 0 ? 'SI' : 'NO',
+        activo: i % 2 === 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         idRol: (i % 2) + 1
