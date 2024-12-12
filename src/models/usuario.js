@@ -62,12 +62,9 @@ module.exports = (sequelize, DataTypes) => {
             },
 
             activo: {
-                type: DataTypes.STRING(2),
+                type: DataTypes.BOOLEAN,
                 allowNull: true,
-                defaultValue: 'SI',
-                validate: {
-                    isIn: [['SI', 'NO']]
-                }
+                defaultValue: true
             },
 
             requestedPasswordChange: {
