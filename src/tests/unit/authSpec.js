@@ -11,6 +11,18 @@ describe.only("Auth controller (Unit Tests)", function () {
   let req, res, next;
   let statusStub, jsonStub;
   let usuario;
+  let authController;
+
+  this.beforeEach(function () {
+    next = sinon.spy();
+    statusStub = sinon.stub().returnsThis();
+    jsonStub = sinon.stub().returnsArg(0);
+
+    res = {
+      status: statusStub,
+      json: jsonStub
+    };
+  })
 
   this.afterEach(function () {
     sinon.restore();
@@ -20,11 +32,8 @@ describe.only("Auth controller (Unit Tests)", function () {
     let getUsuarioFake;
 
     this.beforeEach(function () {
-      next = sinon.spy();
       usuario = { ...aUser(1), activo: true };
       getUsuarioFake = sinon.stub();
-      statusStub = sinon.stub().returnsThis();
-      jsonStub = sinon.stub().returnsArg(0);
 
       req = {
         matchedData: {
@@ -32,19 +41,13 @@ describe.only("Auth controller (Unit Tests)", function () {
           clave: usuario.clave
         }
       };
-
-      res = {
-        status: statusStub,
-        json: jsonStub
-      };
     });
 
     describe('When user exists', function () {
-      let auth;
 
       this.beforeEach(function () {
         getUsuarioFake = sinon.fake.resolves(usuario);
-        auth = proxyquire('../../controllers/authController', {
+        authController = proxyquire('../../controllers/authController', {
           '../services/usuariosService': {
             getUsuarioByCorreo: getUsuarioFake
           }
@@ -57,7 +60,7 @@ describe.only("Auth controller (Unit Tests)", function () {
 
         const expectedResponse = { token: generateToken({ sub: usuario.id }) }
 
-        return auth.login(req, res, next)
+        return authController.login(req, res, next)
           .then(() => {
             expect(getUsuarioFake.calledOnceWith(usuario.correo)).to.be.true;
             expect(compareFake.calledOnce).to.be.true;
@@ -74,7 +77,7 @@ describe.only("Auth controller (Unit Tests)", function () {
 
         const expectedResponse = { message: "Credenciales invalidas" };
 
-        return auth.login(req, res, next)
+        return authController.login(req, res, next)
           .then(() => {
             expect(getUsuarioFake.calledOnceWith(usuario.correo)).to.be.true;
             expect(compareFake.calledOnce).to.be.true;
@@ -109,7 +112,7 @@ describe.only("Auth controller (Unit Tests)", function () {
 
     describe('When user exist but has invalid state', function () {
       it("Should fail because user is not active", function () {
-        getUsuarioFake = sinon.fake.resolves({ usuario, activo: false });
+        getUsuarioFake = sinon.fake.resolves({ ...usuario, activo: false });
         const { login } = proxyquire('../../controllers/authController', {
           '../services/usuariosService': {
             getUsuarioByCorreo: getUsuarioFake
@@ -128,10 +131,61 @@ describe.only("Auth controller (Unit Tests)", function () {
     })
   })
 
-  describe('generate password recovery token', () => {
+  describe('generate password recovery token', function () {
+    const correo = 'johndoe@example.com';
+
+    this.beforeEach(function () {
+      req = { matchedData: { correo } }
+    });
+
+
+    it('Should generate token and send email to user', function () {
+      const getUsuarioFake = sinon.fake.resolves({ ...usuario, correo, requestedPasswordChange: 'NO' });
+      const toggleStatusFake = sinon.fake.resolves(true);
+      const sendEmailFake = sinon.fake.resolves(true);
+
+      const { generatePasswordRecoveryToken } = proxyquire('../../controllers/authController', {
+        '../services/usuariosService': {
+          getUsuarioByCorreo: getUsuarioFake,
+          toggleUsuarioRequestPasswordChange: toggleStatusFake
+        },
+        '../services/emailSenderService': {
+          sendEmail: sendEmailFake
+        }
+      })
+
+      return generatePasswordRecoveryToken(req, res, next)
+        .then(() => {
+          expect(getUsuarioFake.calledOnceWith(correo), 'get usuario').to.be.true;
+          expect(sendEmailFake.calledOnce, 'send email').to.be.true;
+          expect(toggleStatusFake.calledOnce, 'toggle status').to.be.true;
+          expect(statusStub.calledOnceWith(200), 'called with 200').to.be.true;
+          expect(jsonStub.calledOnceWith(sinon.match({ message: 'Se ha enviado un correo de recuperación de contraseña' })), 'json message').to.be.true;
+        })
+
+    });
+
+
+    it('Should fail because user was not found', function () {
+      const getUsuarioFake = sinon.fake.resolves(null);
+      const { generatePasswordRecoveryToken } = proxyquire('../../controllers/authController', {
+        '../services/usuariosService': {
+          getUsuarioByCorreo: getUsuarioFake
+        }
+      })
+
+      return generatePasswordRecoveryToken(req, res, next)
+        .then(() => {
+          expect(getUsuarioFake.calledOnceWith(correo), 'getUsuarioByCorreo called once').to.be.true;
+          expect(statusStub.calledOnceWith(404), 'status called once').to.be.true;
+          expect(jsonStub.calledOnceWith(sinon.match({ message: 'El usuario no existe' })), 'json called once').to.be.true;
+        })
+    })
+
+
   })
 
-  describe('handle password recovery token', () => {
+  describe('handle password recovery token', function () {
 
   })
 
