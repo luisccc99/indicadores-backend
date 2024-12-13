@@ -19,7 +19,7 @@ const verifyJWT = (req, res, next) => {
         if (err) {
             return res.status(403).send('Invalid or expired token');
         }
-        
+
         req.sub = decoded.sub;
         next();
     });
@@ -41,13 +41,15 @@ const verifyUserIsActive = async (req, res, next) => {
     if (!isActive) {
         return res.status(403).send('Esta cuenta se encuentra deshabilitada');
     }
-    
+
     next();
 }
 
 const hashClave = (clave) => bcrypt.hash(clave, SALT_ROUNDS);
 
-const generateToken = (payload) => jwt.sign({ ...payload }, TOKEN_SECRET, { expiresIn: TOKEN_EXPIRATION_TIME });
+const generateToken = ({ expirationTime = TOKEN_EXPIRATION_TIME, ...payload }) => {
+    return jwt.sign({ ...payload }, TOKEN_SECRET, { expiresIn: expirationTime });
+}
 
 module.exports = {
     verifyJWT,

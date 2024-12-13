@@ -248,7 +248,7 @@ const updateUserPassword = async (id, password) => {
     }
 };
 
-const updateUserPasswordStatus = async (id) => {
+const toggleUsuarioRequestPasswordChange = async (id) => {
     try {
         const actualStatus = await Usuario.findOne({
             attributes: ['requestedPasswordChange'],
@@ -260,7 +260,7 @@ const updateUserPasswordStatus = async (id) => {
             { where: { id } });
         return affectedRows > 0;
     } catch (err) {
-        throw new Error(`Error al actualizar contraseña: ${err.message}`);
+        throw new Error(`Error al solicitar actualización de clave: ${err.message}`);
     }
 };
 
@@ -353,7 +353,7 @@ module.exports = {
     getIndicadoresFromUser,
     countInactiveUsers,
     updateUserPassword,
-    updateUserPasswordStatus,
+    toggleUsuarioRequestPasswordChange,
     isUserActive,
     getUserStatsInfo,
     getUsersFromIndicador,
