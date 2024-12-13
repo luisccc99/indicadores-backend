@@ -1,12 +1,12 @@
-const express = require('express');
 const { body } = require('express-validator');
-
-const router = express.Router();
+const promisedRouter = require('express-promise-router')
 const { login, generatePasswordRecoveryToken, handlePasswordRecoveryToken } = require('../controllers/authController');
 const { loginValidationRules, tokenValidationRules } = require('../middlewares/validator/authValidator');
 const {
   validate,
 } = require('../middlewares/validator/generalValidator');
+
+const router = promisedRouter()
 
 /**
  * @swagger
