@@ -63,9 +63,11 @@ app.use(helmet({
 }));
 
 // Log HTTP requests with Morgan and Winston
-app.use(morgan(':method :url :status :response-time ms - :res[content-length]', {
-  stream: { write: message => logger.http(message.trim()) }
-}));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan(':method :url :status :response-time ms - :res[content-length]', {
+    stream: { write: message => logger.http(message.trim()) }
+  }));
+}
 
 // Parse data from requests
 app.use(express.json());
