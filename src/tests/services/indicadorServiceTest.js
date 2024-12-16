@@ -20,10 +20,6 @@ describe('Indicador service', function () {
     sinon.restore();
   });
 
-  this.afterAll(function () {
-    server.close();
-  });
-
   describe('Read operations', function () {
     it('Should return a list of indicadores and the total number of them', function () {
       const findAndCountAllFake = sinon.fake.resolves({ rows: indicadores, count: indicadores.length });

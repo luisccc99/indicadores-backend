@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 chai.use(chaiHttp);
 const { expect } = chai;
-const { app, server } = require('../../../app');
+const { app } = require('../../../app');
 
 const { Historico, Usuario, Indicador } = require('../../models');
 const { someHistoricos, anIndicador } = require('../../utils/factories');
@@ -20,10 +20,6 @@ describe('v1/historicos', function () {
     const adminRol = { rolValue: 'ADMIN' };
     const userRol = { roles: 'USER' };
     const statusActive = { activo: 'SI' };
-
-    this.afterAll(function () {
-        server.close();
-    });
 
     this.beforeEach(function () {
         findOneFake = sinon.stub(Usuario, 'findOne');

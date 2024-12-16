@@ -8,7 +8,6 @@ const UsuarioService = require('../../services/usuariosService');
 
 const { expect } = chai;
 const { Usuario } = require('../../models');
-const { server } = require('../../../app')
 const { aUser, anIndicador } = require('../../utils/factories');
 
 describe('User service', function () {
@@ -24,11 +23,6 @@ describe('User service', function () {
     this.afterEach(function () {
         sinon.restore();
     });
-
-    this.afterAll(function () {
-        server.close();
-    });
-
     describe('Read operations', function () {
         const userList = [aUser(1), aUser(2), aUser(3)]
 

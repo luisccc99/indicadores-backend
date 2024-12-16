@@ -9,7 +9,7 @@ require('dotenv').config();
 
 chai.use(chaiHttp);
 const { expect } = chai;
-const { app, server } = require('../../../app');
+const { app } = require('../../../app');
 const { Tema, Usuario } = require('../../models');
 const { aTema, aUser } = require('../../utils/factories');
 const fileUpload = require('../../middlewares/fileUpload');
@@ -28,10 +28,6 @@ describe('/temas', function () {
 
     afterEach(function () {
       sinon.restore();
-    });
-
-    this.afterAll(function () {
-      server.close();
     });
 
     it('Should return a list of Temas', function (done) {
@@ -86,10 +82,6 @@ describe('/temas', function () {
   describe('GET /:idTema', function () {
     afterEach(function () {
       sinon.restore();
-    });
-
-    this.afterAll(function () {
-      server.close();
     });
 
     it('Should return a Tema', function (done) {
@@ -555,9 +547,6 @@ describe('/temas', function () {
       sinon.restore();
     });
 
-    this.afterAll(function () {
-      server.close();
-    });
 
     it('Should edit a Tema', function (done) {
       const temaFake = aTema(1);
@@ -615,10 +604,6 @@ describe('/temas', function () {
 
     this.afterEach(function () {
       sinon.restore();
-    });
-
-    this.afterAll(function () {
-      server.close();
     });
 
     it('Should edit a given Tema status', function (done) {

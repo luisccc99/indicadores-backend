@@ -42,10 +42,6 @@ describe('v1/indicadores', function () {
 		findAllIndicadores = sinon.stub(Indicador, 'findAll');
 	});
 
-	this.afterAll(function () {
-		server.close();
-	});
-
 	this.afterEach(function () {
 		sinon.restore();
 	})

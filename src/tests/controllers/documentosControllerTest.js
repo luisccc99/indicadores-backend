@@ -3,15 +3,12 @@ const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
 const { Indicador } = require('../../models');
-const { app, server } = require('../../../app');
+const { app } = require('../../../app');
 const sinon = require('sinon');
 const { anIndicador, aTema } = require('../../utils/factories');
 
 describe('v1/documentos', function () {
   const dummyIndicador = anIndicador(1);
-  this.afterAll(function () {
-    server.close();
-  });
 
   this.afterEach(function () {
     sinon.restore();

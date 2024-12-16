@@ -6,7 +6,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const sinon = require('sinon');
 const jwt = require('jsonwebtoken')
-const { app, server } = require('../../../app');
+const { app } = require('../../../app');
 const { Usuario } = require('../../models');
 const { aUser } = require('../../utils/factories');
 require('dotenv').config();
@@ -21,10 +21,6 @@ describe('v1/me', function () {
 
   this.afterEach(function () {
     sinon.restore();
-  });
-
-  this.afterAll(function () {
-    server.close();
   });
 
   describe('/', function () {

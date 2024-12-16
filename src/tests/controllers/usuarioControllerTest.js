@@ -32,10 +32,6 @@ describe('v1/usuarios', function () {
     sinon.restore();
   });
 
-  this.afterAll(function () {
-    server.close();
-  });
-
   describe('GET /usuarios', function () {
 
     it('Should return not found if user does not exist', function (done) {

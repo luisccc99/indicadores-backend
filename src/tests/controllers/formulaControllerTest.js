@@ -4,7 +4,7 @@ const sinon = require('sinon');
 require('dotenv').config();
 chai.use(chaiHttp);
 const { expect } = chai;
-const { app, server } = require('../../../app');
+const { app } = require('../../../app');
 const { generateToken } = require('../../middlewares/auth');
 const { Usuario, Formula, Variable, UsuarioIndicador } = require('../../models');
 const { aVariable } = require('../../utils/factories');
@@ -26,10 +26,6 @@ describe('v1/formulas', function () {
 
   this.afterEach(function () {
     sinon.restore();
-  });
-
-  this.afterAll(function () {
-    server.close();
   });
 
 

@@ -8,7 +8,7 @@ chai.use(chaiHttp);
 const { expect } = chai;
 const { Usuario, Mapa, UsuarioIndicador } = require('../../models');
 const { aMapa } = require('../../utils/factories');
-const { app, server } = require('../../../app');
+const { app } = require('../../../app');
 const { generateToken } = require('../../middlewares/auth');
 
 describe('v1/mapas', function () {
@@ -24,10 +24,6 @@ describe('v1/mapas', function () {
     findOneFake = sinon.stub(Usuario, 'findOne')
     findOneFake.onFirstCall().resolves(statusActive);
     findOneFake.onSecondCall().resolves(adminRol);
-  });
-
-  this.afterAll(function () {
-    server.close();
   });
 
   this.afterEach(function () {

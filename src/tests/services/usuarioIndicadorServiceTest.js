@@ -17,10 +17,6 @@ describe('Usuario-Indicador service', function () {
     sinon.restore();
   });
 
-  this.afterAll(function () {
-    server.close();
-  });
-
   describe('Read operations', () => {
     it('Should return  a list of indicadores, its owner and how many users are responsible for them', () => {
       const findAndCountAllFake = sinon.fake.resolves({ rows: relations, count: relations.length });

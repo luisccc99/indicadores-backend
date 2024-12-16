@@ -28,10 +28,6 @@ describe('v1/variables', function () {
     sinon.restore();
   });
 
-  this.afterAll(function () {
-    server.close();
-  });
-
   describe('PATCH /variables/:idVariable', function () {
 
     it('Should update a variable succesfully', function (done) {

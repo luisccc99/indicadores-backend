@@ -16,11 +16,6 @@ describe('Historicos service', function () {
         sinon.restore();
     });
 
-    this.afterAll(function () {
-        server.close();
-    });
-
-
     describe('Read operations', function () {
         it('Should return a list of historicos with an INNER JOIN from indicadores', function () {
             const findAndCountALlFake = sinon.fake.resolves({ rows: historicos, count: historicos.length });
