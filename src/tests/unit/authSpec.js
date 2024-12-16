@@ -5,6 +5,8 @@ const proxyquire = require('proxyquire').noCallThru();
 const bcrypt = require("bcryptjs");
 const { aUser } = require("../../utils/factories");
 const sinon = require("sinon");
+const jwt = require("jsonwebtoken");
+const { TokenExpiredError } = jwt;
 
 describe.only("Auth controller (Unit Tests)", function () {
 
@@ -140,7 +142,7 @@ describe.only("Auth controller (Unit Tests)", function () {
 
 
     it('Should generate token and send email to user', function () {
-      const getUsuarioFake = sinon.fake.resolves({ ...usuario, correo, requestedPasswordChange: 'NO' });
+      const getUsuarioFake = sinon.fake.resolves({ ...usuario, correo, requestedPasswordChange: false });
       const toggleStatusFake = sinon.fake.resolves(true);
       const sendEmailFake = sinon.fake.resolves(true);
 
@@ -182,11 +184,104 @@ describe.only("Auth controller (Unit Tests)", function () {
         })
     })
 
-
+    // what happens when
+    // - request password change is truthy 
+    // - toggling user request password change fails
+    // - sending email fails
   })
 
   describe('handle password recovery token', function () {
+    const sub = 1;
+    const clave = 'password'
+    this.beforeEach(function () {
+      req = {
+        matchedData: {
+          token: generateToken({ sub }),
+          clave
+        }
+      }
+    })
 
+    it('Should fail because user did not request password change', function () {
+      const getUsuarioFake = sinon.fake.resolves({ ...aUser(sub), requestedPasswordChange: false });
+      const { handlePasswordRecoveryToken } = proxyquire('../../controllers/authController', {
+        '../services/usuariosService': {
+          getUsuarioById: getUsuarioFake
+        }
+      })
+
+      return handlePasswordRecoveryToken(req, res, next)
+        .then(() => {
+          expect(getUsuarioFake.calledOnceWith(sub), 'getUsuarioById').to.be.true;
+          expect(statusStub.calledOnceWith(409), 'statusStub').to.be.true;
+          expect(jsonStub.calledOnceWith(sinon.match({ message: "El usuario no ha solicitado un cambio de contraseña" })), 'jsonStub').to.be.true;
+        })
+    });
+
+    it('Should fail because user is inactive', function () {
+      const getUsuarioFake = sinon.fake.resolves({ ...aUser(sub), requestedPasswordChange: true, activo: false });
+      const { handlePasswordRecoveryToken } = proxyquire('../../controllers/authController', {
+        '../services/usuariosService': {
+          getUsuarioById: getUsuarioFake,
+        }
+      })
+
+      return handlePasswordRecoveryToken(req, res, next)
+        .then(() => {
+          expect(statusStub.calledOnceWith(409)).to.be.true;
+          expect(jsonStub.calledOnceWith(sinon.match({ message: 'El usuario se encuentra inactivo' })));
+          expect(getUsuarioFake.calledOnceWith(sub)).to.be.true;
+        })
+    });
+
+    it('Should fail because token is invalid', function () {
+      const getUsuarioFake = sinon.fake.resolves({ ...aUser(sub), requestedPasswordChange: true, activo: true });
+      const { handlePasswordRecoveryToken } = proxyquire('../../controllers/authController', {
+        '../services/usuariosService': {
+          getUsuarioById: getUsuarioFake,
+        }
+      })
+
+      const verifyJWTFake = sinon.fake.throws(new TokenExpiredError('jwt expired'));
+      sinon.replace(jwt, 'verify', verifyJWTFake);
+
+      return handlePasswordRecoveryToken(req, res, next)
+        .then(() => {
+          expect(verifyJWTFake.calledOnce, 'verifyJWT').to.be.true;
+          expect(getUsuarioFake.callCount, 'getUsuario').to.equal(0);
+          expect(statusStub.calledOnceWith(403), 'statusStub').to.be.true;
+          expect(jsonStub.calledOnceWith(sinon.match({ message: 'Token invalido' })), 'jsonStub');
+        })
+
+    });
+
+    it('Should update password', function () {
+      const getUsuarioFake = sinon.fake.resolves({ ...aUser(sub), requestedPasswordChange: true, activo: true });
+      const updateUserPasswordFake = sinon.fake.resolves(true);
+      const toggleStatusFake = sinon.fake.resolves(true);
+      const hashedClave = 'ha*Ash'
+      const hashClaveFake = sinon.fake.resolves(hashedClave)
+      const { handlePasswordRecoveryToken } = proxyquire('../../controllers/authController', {
+        '../services/usuariosService': {
+          getUsuarioById: getUsuarioFake,
+          updateUserPassword: updateUserPasswordFake,
+          toggleUsuarioRequestPasswordChange: toggleStatusFake
+        },
+        '../middlewares/auth': {
+          hashClave: hashClaveFake
+        }
+      })
+
+      return handlePasswordRecoveryToken(req, res, next)
+        .then(() => {
+          expect(getUsuarioFake.calledOnceWith(sub), 'getUsuario').to.be.true;
+          expect(updateUserPasswordFake.calledOnceWith(sub, hashedClave), 'update password').to.be.true;
+          expect(toggleStatusFake.calledOnceWith(sub), 'toggle status').to.be.true;
+          expect(hashClaveFake.calledOnceWith(clave)).to.be.true;
+          expect(statusStub.calledOnceWith(200), 'status').to.be.true;
+          expect(jsonStub.calledOnceWith(sinon.match({ message: 'Contraseña actualizada' })), 'json').to.be.true;
+        })
+    })
   })
 
 });

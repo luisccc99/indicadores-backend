@@ -102,7 +102,7 @@ const aUser = (id) => ({
 	clave: faker.internet.password(8, false),
 	activo: true,
 	idRol: 1,
-	requestedPasswordChange: id % 2 === 0 ? 'SI' : 'NO',
+	requestedPasswordChange: id % 2 === 0,
 });
 
 const aTema = (id) => {
