@@ -8,7 +8,7 @@ const sinon = require("sinon");
 const jwt = require("jsonwebtoken");
 const { TokenExpiredError } = jwt;
 
-describe.only("Auth controller (Unit Tests)", function () {
+describe("Auth controller (Unit Tests)", function () {
 
   let req, res, next;
   let statusStub, jsonStub;

@@ -1,4 +1,4 @@
-const faker = require("faker");
+const { faker } = require("@faker-js/faker");
 const { aTema, anIndicador, aVariable } = require("../../utils/factories");
 
 const stubExistsMiddleware = (stub, options) => {
@@ -92,7 +92,7 @@ const getIndicadorDTO = () => {
     fd.append('ultimoValorDisponible', ultimoValorDisponible);
     fd.append('anioUltimoValorDisponible', -10);
     fd.append('periodicidad', periodicidad);
-    fd.append('idTema', faker.datatype.number(10));
+    fd.append('idTema', faker.number.int(10));
 
     const idTema = 1;
     const formula = aTema()

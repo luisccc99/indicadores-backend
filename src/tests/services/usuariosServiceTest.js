@@ -2,7 +2,7 @@
 /* eslint-disable prefer-arrow-callback */
 /* eslint-disable import/no-extraneous-dependencies */
 const chai = require('chai');
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 const sinon = require('sinon');
 const UsuarioService = require('../../services/usuariosService');
 
@@ -12,7 +12,7 @@ const { aUser, anIndicador } = require('../../utils/factories');
 
 describe('User service', function () {
 
-    const usuario = aUser(faker.datatype.number());
+    const usuario = aUser(faker.number.int());
     const indicadoresFromUser = [
         anIndicador(1),
         anIndicador(2),

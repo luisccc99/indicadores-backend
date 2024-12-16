@@ -7,13 +7,13 @@ const { Tema } = require('../../models');
 const sinon = require('sinon');
 const { aTema } = require('../../utils/factories');
 const TemaService = require('../../services/temaService');
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 
 describe('Tema service', function () {
     afterEach(function () {
         sinon.restore();
     });
-    
+
     describe('Read operations', function () {
         const temas = [aTema(1), aTema(2), aTema(3)];
         it('Should return a list of temas and the total number of them', function () {
