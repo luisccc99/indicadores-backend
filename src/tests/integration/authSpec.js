@@ -3,13 +3,15 @@ const chai = require('chai')
 const chaiHttp = require('chai-http');
 const { app } = require('../../../app');
 const { Usuario } = require('../../models');
-const { hashClave } = require('../../middlewares/auth');
+const { hashClave, generateToken } = require('../../middlewares/auth');
 const emailSenderService = require('../../services/emailSenderService');
+const { aUser } = require('../../utils/factories');
+const { faker } = require('@faker-js/faker');
 
 chai.use(chaiHttp);
 const { expect } = chai;
 
-describe.only('/auth endpoint (Integration Tests)', () => {
+describe('v1/auth endpoint (Integration Tests)', () => {
   let clave;
   before('Set up clave', () => {
     return hashClave('password')
@@ -87,10 +89,10 @@ describe.only('/auth endpoint (Integration Tests)', () => {
   describe('POST /password-reset', () => {
     let sendEmailStub;
 
-    
+
     before('Create user to reset password', () => {
       sendEmailStub = sinon.stub(emailSenderService, 'sendEmail').resolves(true);
-      
+
       return Usuario.create({
         nombres: 'John',
         apellidoPaterno: 'Doe',
@@ -98,11 +100,11 @@ describe.only('/auth endpoint (Integration Tests)', () => {
         clave,
       })
     })
-    
+
     after('Remove users', () => {
       return Usuario.destroy({ truncate: { cascade: true } })
     })
-    
+
     afterEach(() => {
       sinon.reset();
     })
@@ -122,7 +124,7 @@ describe.only('/auth endpoint (Integration Tests)', () => {
     })
 
     it('Should fail because user was not found', done => {
-      
+
       chai.request(app)
         .post('/api/v1/auth/password-reset')
         .send({ correo: 'notfound@example.com' })
@@ -136,6 +138,77 @@ describe.only('/auth endpoint (Integration Tests)', () => {
   });
 
   describe('PATCH /password-reset/token', () => {
+    let tokens = []
+    before(('Create usuarios and tokens', () => {
+      tokens = [
+        generateToken({ sub: 1 }),
+        generateToken({ sub: 2 }),
+        generateToken({ sub: 3 })
+      ];
 
+      return Usuario.bulkCreate([
+        { ...aUser(1), activo: false },
+        { ...aUser(2), activo: true, requestedPasswordChange: false },
+        { ...aUser(3), activo: true, requestedPasswordChange: true },
+      ])
+        .catch(console.log)
+    }))
+
+    after(() => {
+      return Usuario.destroy({ truncate: { cascade: true } })
+    })
+
+    it('Should return 409 because user is inactive', done => {
+      chai.request(app)
+        .patch(`/api/v1/auth/password-reset/${tokens[0]}`)
+        .send({
+          clave: faker.internet.password(8)
+        })
+        .end((_err, res) => {
+          expect(res.status).to.be.equal(409)
+          expect(res.body.message).to.be.equal('El usuario se encuentra inactivo')
+          done();
+        })
+    });
+
+    it('Should return 409 because user has not started recovery process', done => {
+      chai.request(app)
+        .patch(`/api/v1/auth/password-reset/${tokens[1]}`)
+        .send({
+          clave: faker.internet.password(8)
+        })
+        .end((_err, res) => {
+          expect(res.status).to.be.equal(409);
+          expect(res.body.message).to.be.equal('El usuario no ha solicitado un cambio de contraseña');
+          done();
+        })
+    });
+
+    it('Should return 200 because password has been updated', done => {
+      chai.request(app)
+        .patch(`/api/v1/auth/password-reset/${tokens[2]}`)
+        .send({
+          clave: faker.internet.password(8)
+        })
+        .end((_err, res) => {
+          expect(res.status).to.be.equal(200);
+          expect(res.body.message).to.be.equal('Contraseña actualizada');
+          done();
+        });
+    });
+
+    it('Should return 403 because token is invalid', done => {
+      const expiredToken = generateToken({ sub: 4, iat: Math.floor(Date.now() / 1000) - 30, expirationTime: 1 })
+      chai.request(app)
+        .patch(`/api/v1/auth/password-reset/${expiredToken}`)
+        .send({
+          clave: faker.internet.password(8)
+        })
+        .end((_err, res) => {
+          expect(res.status).to.be.equal(403);
+          expect(res.body.message).to.be.equal('Token invalido');
+          done();
+        })
+    });
   });
 })
