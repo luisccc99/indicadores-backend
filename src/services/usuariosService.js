@@ -250,13 +250,12 @@ const updateUserPassword = async (id, password) => {
 
 const toggleUsuarioRequestPasswordChange = async (id) => {
     try {
-        const actualStatus = await Usuario.findOne({
+        const { requestedPasswordChange: currentStatus } = await Usuario.findOne({
             attributes: ['requestedPasswordChange'],
             where: { id }
         });
-        const newStatus = actualStatus.requestedPasswordChange === 'SI' ? 'NO' : 'SI';
         const affectedRows = await Usuario.update(
-            { requestedPasswordChange: newStatus },
+            { requestedPasswordChange: !currentStatus },
             { where: { id } });
         return affectedRows > 0;
     } catch (err) {

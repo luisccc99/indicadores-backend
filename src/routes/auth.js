@@ -235,6 +235,7 @@ router.post('/password-reset',
  */
 router.patch('/password-reset/:token?',
   tokenValidationRules(),
+  body('clave').notEmpty(),
   validate,
   handlePasswordRecoveryToken)
 

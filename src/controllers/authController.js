@@ -50,7 +50,7 @@ const generatePasswordRecoveryToken = async (req, res, next) => {
     user: { nombres: existingUser.nombres, correo: existingUser.correo }
   })
 
-  if (existingUser.requestedPasswordChange === 'NO') {
+  if (!existingUser.requestedPasswordChange) {
     await toggleUsuarioRequestPasswordChange(existingUser.id);
   }
   await emailSenderService.sendEmail(existingUser, token);
@@ -59,28 +59,30 @@ const generatePasswordRecoveryToken = async (req, res, next) => {
 };
 
 const handlePasswordRecoveryToken = async (req, res, next) => {
+  const { token, clave } = req.matchedData;
   try {
-    const token = req.matchedData.token;
-    const { clave } = req.body;
     const decoded = jwt.verify(token, TOKEN_SECRET);
+
     const user = await getUsuarioById(decoded.sub);
-    if (clave && user && user.requestedPasswordChange === 'SI') {
-      const hashedPassword = await hashClave(clave);
-      const updatePassword = await updateUserPassword(user.id, hashedPassword);
-      const changeStatus = await toggleUsuarioRequestPasswordChange(user.id);
-      if (updatePassword && changeStatus) {
-        return res.status(200).json({ message: "Contraseña actualizada" });
-      }
-      return res.status(400).json({ message: "Error al actualizar contraseña" });
+
+    if (!user.activo) {
+      return res.status(409).json({ message: "El usuario se encuentra inactivo" })
+    }
+    if (!user.requestedPasswordChange) {
+      return res.status(409).json({ message: "El usuario no ha solicitado un cambio de contraseña" });
     }
 
-    if (user.requestedPasswordChange === 'NO') {
-      return res.status(401).json({ message: "El usuario no ha solicitado un cambio de contraseña" });
-    }
+    const hashedPassword = await hashClave(clave);
+    await updateUserPassword(user.id, hashedPassword);
+    await toggleUsuarioRequestPasswordChange(user.id);
 
-    return res.status(401).json({ message: "Token invalido" });
+    return res.status(200).json({ message: "Contraseña actualizada" });
+
   } catch (err) {
-    next(err)
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(403).json({ message: 'Token invalido' });
+    }
+    throw err;
   }
 }
 
