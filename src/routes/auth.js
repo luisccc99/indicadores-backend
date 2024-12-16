@@ -1,4 +1,4 @@
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 const promisedRouter = require('express-promise-router')
 const { login, generatePasswordRecoveryToken, handlePasswordRecoveryToken } = require('../controllers/authController');
 const { loginValidationRules, tokenValidationRules } = require('../middlewares/validator/authValidator');
@@ -233,9 +233,10 @@ router.post('/password-reset',
  *         500:
  *           $ref: '#/components/responses/InternalServerError'
  */
-router.patch('/password-reset/:token?',
+router.patch('/password-reset/:token',
   tokenValidationRules(),
   body('clave').notEmpty(),
+  param('token').notEmpty().isJWT(),
   validate,
   handlePasswordRecoveryToken)
 
