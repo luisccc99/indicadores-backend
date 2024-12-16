@@ -39,7 +39,7 @@ const getUsuarioById = async (id) => {
                 'requestedPasswordChange',
                 [sequelize.literal('"rol"."id"'), "idRol"],
                 [sequelize.literal('"rol"."rol"'), "roles"],
-                [sequelize.literal('"rol"."activo"'), "activo"],
+                [sequelize.literal('"rol"."activo"'), "isRolActivo"],
             ],
             include: [{
                 model: Rol,
