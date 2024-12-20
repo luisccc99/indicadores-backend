@@ -14,7 +14,7 @@ const { faker } = require('@faker-js/faker');
 const { generateToken } = require('../../middlewares/auth');
 const { expect } = chai;
 
-describe('/v1/indicadores (Integration tests)', () => {
+describe.only('/v1/indicadores (Integration tests)', () => {
   let adminRol, userRol;
   let usuarioA, usuarioB, usuarioInactivo, admin;
   let indicadorA, indicadorB, indicadorInactivo;
@@ -65,10 +65,13 @@ describe('/v1/indicadores (Integration tests)', () => {
         idIndicador: indicadorB.id,
         idUsuario: admin.id,
         createdBy: admin.id,
-        isOwner: false
       }, {
         idIndicador: indicadorInactivo.id,
         idUsuario: usuarioA.id,
+        createdBy: admin.id
+      }, {
+        idIndicador: indicadorInactivo.id,
+        idUsuario: usuarioB.id,
         createdBy: admin.id
       }]).catch(console.log)
     })
@@ -132,12 +135,39 @@ describe('/v1/indicadores (Integration tests)', () => {
 
 
     describe('GET /:idIndicador/usuarios', () => {
-      before('Assigned usuarios to indicador', () => {
+
+      it('Should return 404 because indicador does not exist', done => {
+        chai.request(app)
+          .get('/api/v1/indicadores/8921')
+          .end((_, res) => {
+            expect(res).to.have.status(404);
+            expect(res.body.message).to.be.equal('No se encontró el elemento (Indicador) con id "8921"');
+            done()
+          })
       });
 
-      it('Should return 404 because indicador does not exist');
-      it('Should return 409 because indicador is not active');
-      it('Should return 200 with usuarios assigned to an indicador');
+      it('Should return 409 because indicador is not active', done => {
+
+        chai.request(app)
+          .get(`/api/v1/indicadores/${indicadorInactivo.id}`)
+          .end((_, res) => {
+            expect(res).to.have.status(409);
+            expect(res.body.message).to.be.equal(`"Indicador" con id "${indicadorInactivo.id}" se encuentra inactivo`);
+            done()
+          })
+      });
+
+      it('Should return 200 with usuarios assigned to an indicador', done => {
+        chai.request(app)
+          .get(`/api/v1/indicadores/${indicadorB.id}/usuarios`)
+          .end((_, res) => {
+            expect(res).to.have.status(200);
+            expect(res.body.data).to.be.an('array').that.is.not.empty;
+            expect(res.body.data[0]).to.not.have.property('clave');
+            done();
+          })
+      });
+
     });
 
 
