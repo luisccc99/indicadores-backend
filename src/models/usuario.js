@@ -71,7 +71,16 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.BOOLEAN,
                 allowNull: true,
                 defaultValue: false
-            }
+            },
+
+            idRol: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                references: {
+                    model: 'Roles',
+                    key: 'id'
+                },
+            },
         },
         {
             sequelize,
