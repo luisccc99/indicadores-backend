@@ -4,7 +4,7 @@ const { expect } = chai;
 const { verifyResourceExists } = require('../../middlewares/resourceExists');
 const { Indicador, Historico } = require('../../models');
 
-describe.only('Resource exists middleware (Unit Tests)', () => {
+describe('Resource exists middleware (Unit Tests)', () => {
 
   let req, res, next;
   let statusStub, jsonStub;
