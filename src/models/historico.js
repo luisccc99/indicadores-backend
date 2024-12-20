@@ -55,6 +55,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: 1
+      },
+
+      idIndicador: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Indicador',
+          key: 'id'
+        }
       }
     },
     {

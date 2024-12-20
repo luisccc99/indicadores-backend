@@ -8,7 +8,8 @@ const {
   Indicador, Usuario, Rol,
   Mapa, sequelize, IndicadorObjetivo,
   Tema, IndicadorTema, Objetivo,
-  UsuarioIndicador
+  UsuarioIndicador, Historico,
+  Formula, Variable
 } = require('../../models');
 const { faker } = require('@faker-js/faker');
 const { generateToken } = require('../../middlewares/auth');
@@ -26,7 +27,6 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
       const usuarios = await createUsuarios({ userRol: userRol.id, adminRol: adminRol.id });
       [usuarioA, usuarioB, usuarioInactivo, admin] = usuarios;
-
       const objetivo = await Objetivo.create({ titulo: faker.word.words(5) });
       const tema = await Tema.create({
         temaIndicador: faker.word.words(3),
@@ -34,7 +34,8 @@ describe.only('/v1/indicadores (Integration tests)', () => {
         descripcion: faker.word.words(10)
       });
 
-      [indicadorA, indicadorB, indicadorInactivo] = await createIndicadores({ createdById: admin.id, updatedById: usuarioA.id });
+      const indicadores = await createIndicadores({ createdById: admin.id, updatedById: usuarioA.id });
+      [indicadorA, indicadorB, indicadorInactivo] = indicadores;
 
       await IndicadorObjetivo.bulkCreate([{
         idIndicador: indicadorA.id,
@@ -56,24 +57,24 @@ describe.only('/v1/indicadores (Integration tests)', () => {
         idIndicador: indicadorInactivo.id,
         idTema: tema.id
       }])
-      await UsuarioIndicador.bulkCreate([{
-        idIndicador: indicadorA.id,
-        idUsuario: admin.id,
-        createdBy: admin.id,
-        isOwner: true
-      }, {
-        idIndicador: indicadorB.id,
-        idUsuario: admin.id,
-        createdBy: admin.id,
-      }, {
-        idIndicador: indicadorInactivo.id,
-        idUsuario: usuarioA.id,
-        createdBy: admin.id
-      }, {
-        idIndicador: indicadorInactivo.id,
-        idUsuario: usuarioB.id,
-        createdBy: admin.id
-      }]).catch(console.log)
+
+      const usuariosIndicadores = [];
+      for (let i = 0; i < indicadores.length; i++) {
+        for (let j = 0; j < usuarios.length; j++) {
+          const currentIndicador = indicadores[i];
+          const currentUsuario = usuarios[j];
+          const isOwner = admin.id === currentUsuario.id;
+
+          usuariosIndicadores.push({
+            idIndicador: currentIndicador.id,
+            idUsuario: currentUsuario.id,
+            createdBy: admin.id,
+            isOwner,
+          })
+        }
+      };
+
+      await UsuarioIndicador.bulkCreate(usuariosIndicadores).catch(console.log)
     })
   })
 
@@ -91,7 +92,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
     }).catch(console.log)
   })
 
-  describe('Public endpoints', () => {
+  describe.only('Public endpoints', () => {
 
     describe('GET /:idIndicador', () => {
       it('Should return 404 because indicador does not exist', done => {
@@ -103,6 +104,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
           })
       });
 
+
       it('Should return 409 because indicador is not active', done => {
         chai.request(app)
           .get(`/api/v1/indicadores/${indicadorInactivo.id}`)
@@ -113,6 +115,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
           })
       });
 
+
       it('Should return status code 422 if :idIndicador is invalid', done => {
         chai.request(app)
           .get('/api/v1/indicadores/uno')
@@ -122,6 +125,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
             done();
           });
       });
+
 
       it('Should return an indicador', done => {
         chai.request(app)
@@ -135,10 +139,9 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
 
     describe('GET /:idIndicador/usuarios', () => {
-
       it('Should return 404 because indicador does not exist', done => {
         chai.request(app)
-          .get('/api/v1/indicadores/8921')
+          .get('/api/v1/indicadores/8921/usuarios')
           .end((_, res) => {
             expect(res).to.have.status(404);
             expect(res.body.message).to.be.equal('No se encontró el elemento (Indicador) con id "8921"');
@@ -146,16 +149,17 @@ describe.only('/v1/indicadores (Integration tests)', () => {
           })
       });
 
-      it('Should return 409 because indicador is not active', done => {
 
+      it('Should return 409 because indicador is not active', done => {
         chai.request(app)
-          .get(`/api/v1/indicadores/${indicadorInactivo.id}`)
+          .get(`/api/v1/indicadores/${indicadorInactivo.id}/usuarios`)
           .end((_, res) => {
             expect(res).to.have.status(409);
             expect(res.body.message).to.be.equal(`"Indicador" con id "${indicadorInactivo.id}" se encuentra inactivo`);
             done()
           })
       });
+
 
       it('Should return 200 with usuarios assigned to an indicador', done => {
         chai.request(app)
@@ -218,16 +222,111 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
 
     describe('GET /:idIndicador/historicos', () => {
-      it('Should return 404 because indicador does not exist')
-      it('Should return 409 because indicador is not active')
-      it('Should return 200 with historic data of an indicador')
+      before('Assign historicos to indicador', () => {
+        return Historico.bulkCreate([{
+          valor: 123,
+          fuente: faker.internet.url(),
+          ecuacion: 'x = x^2',
+          descripcionEcuacion: faker.word.words(5),
+          anio: faker.date.past({ years: 5 }).getFullYear(),
+          pushedBy: usuarioB.id,
+          idIndicador: indicadorA.id
+        }])
+      });
+
+      after(() => {
+        return Historico.destroy({ truncate: { cascade: true } });
+      })
+
+      it('Should return 404 because indicador does not exist', done => {
+        chai.request(app)
+          .get('/api/v1/indicadores/999/historicos')
+          .end((err, res) => {
+            expect(err).to.be.null;
+            expect(res).to.have.status(404);
+            done();
+          })
+      })
+
+      it('Should return 409 because indicador is not active', done => {
+        chai.request(app)
+          .get(`/api/v1/indicadores/${indicadorInactivo.id}/historicos`)
+          .end((_err, res) => {
+            expect(res.status).to.be.equal(409);
+            done();
+          })
+      });
+
+      it('Should return 200 with historic data of an indicador', done => {
+        chai.request(app)
+          .get(`/api/v1/indicadores/${indicadorA.id}/historicos`)
+          .end((_err, res) => {
+            expect(res.status).to.be.equal(200);
+            expect(res.body.data).to.be.an('array').that.is.not.empty;
+            done()
+          })
+      })
     });
 
 
     describe('GET /:idIndicador/formula', () => {
-      it('Should return 404 because indicador does not exist')
-      it('Should return 409 because indicador is not active')
-      it('Should return 200 with formula and variables of an indicador')
+      before('Create formula', () => {
+        return sequelize.transaction(async _t => {
+          const formula = await Formula.create({
+            ecuacion: 'x = x^2',
+            descripcion: faker.word.words(5),
+            isFormula: 'SI',
+            idIndicador: indicadorB.id
+          })
+
+          await Variable.create({
+            nombre: faker.word.sample(),
+            descripcion: faker.word.words(4),
+            dato: faker.number.int({ min: 1, max: 200 }),
+            unidadMedida: faker.word.sample(),
+            anio: faker.date.past().getFullYear(),
+            idFormula: formula.id
+          })
+        })
+      })
+
+      after('Remove formula', () => {
+        return sequelize.transaction(async _t => {
+          await Variable.destroy({ truncate: { cascade: true } })
+          await Formula.destroy({ truncate: { cascade: true } })
+        })
+      })
+
+      it('Should return 404 because indicador does not exist', done => {
+        chai.request(app)
+          .get('/api/v1/indicadores/999/formula')
+          .end((err, res) => {
+            expect(err).to.be.null;
+            expect(res).to.have.status(404);
+            done();
+          })
+      })
+
+
+      it('Should return 409 because indicador is not active', done => {
+        chai.request(app)
+          .get(`/api/v1/indicadores/${indicadorInactivo.id}/formula`)
+          .end((_err, res) => {
+            expect(res.status).to.be.equal(409);
+            done();
+          })
+      })
+
+
+      it('Should return 200 with formula and variables of an indicador', done => {
+        chai.request(app)
+          .get(`/api/v1/indicadores/${indicadorB.id}/formula`)
+          .end((_err, res) => {
+            expect(res.status).to.be.equal(200);
+            expect(res.body.data).to.be.an('object');
+            done();
+          })
+      })
     });
   })
 

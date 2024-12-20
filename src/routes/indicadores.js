@@ -249,7 +249,8 @@ router.get('/:idIndicador/usuarios',
   validate,
   verifyResourceExists({
     routeParam: 'idIndicador',
-    model: 'Indicador'
+    model: 'Indicador',
+    isActivo: true
   }),
   getUsersFromIndicador
 )
@@ -331,6 +332,11 @@ router.get('/:idIndicador/historicos',
   sortValidationRules(),
   idValidation(),
   validate,
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador',
+    isActivo: true
+  }),
   getHistoricos
 );
 
@@ -374,7 +380,8 @@ router.get('/:idIndicador/formula',
   validate,
   verifyResourceExists({
     routeParam: 'idIndicador',
-    model: 'Indicador'
+    model: 'Indicador',
+    isActivo: true
   }),
   getFormulaOfIndicador
 )
