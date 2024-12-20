@@ -3,7 +3,7 @@ const {
   idValidation,
   formatDocsValidation,
 } = require('../middlewares/validator/generalValidator');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const IndicadorController = require('../controllers/indicadorController');
 const promisedRouter = require('express-promise-router');
 const router = promisedRouter();
@@ -183,7 +183,11 @@ router.route('/:idIndicador/:format')
     idValidation(),
     formatDocsValidation(),
     validate,
-    exists('idIndicador', 'Indicador'),
+    verifyResourceExists({
+      routeParam: 'idIndicador',
+      model: 'Indicador',
+      isActivo: true
+    }),
     IndicadorController.generateFile
   );
 

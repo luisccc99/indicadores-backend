@@ -1,7 +1,7 @@
 const express = require('express');
 const { updateVariable, deleteVariable } = require('../controllers/variableController');
 const { verifyUserIsActive, verifyUserHasRoles, verifyJWT } = require('../middlewares/auth');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const { idValidation, validate } = require('../middlewares/validator/generalValidator');
 const { updateVariableValidationRules } = require('../middlewares/validator/variableValidator');
 
@@ -95,7 +95,10 @@ router.route('/:idVariable')
     idValidation(),
     updateVariableValidationRules(),
     validate,
-    exists('idVariable', 'Variable'),
+    verifyResourceExists({
+      routeParam: 'idVariable',
+      model: 'Variable'
+    }),
     updateVariable
   );
 
@@ -138,7 +141,10 @@ router.route('/:idVariable')
   .delete(
     idValidation(),
     validate,
-    exists('idVariable', 'Variable'),
+    verifyResourceExists({
+      routeParam: 'idVariable',
+      model: 'Variable'
+    }),
     deleteVariable
   );
 

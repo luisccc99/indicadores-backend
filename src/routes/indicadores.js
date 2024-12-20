@@ -34,7 +34,7 @@ const { uploadImage } = require('../middlewares/fileUpload');
 const { getCatalogosFromIndicador, updateOrCreateCatalogFromIndicador } = require('../controllers/catalogoController');
 const { DESTINATIONS } = require('../services/fileService');
 const { getFormulaOfIndicador, createFormula } = require('../controllers/formulaController');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const { createFormulaValidationRules } = require('../middlewares/validator/formulaValidator');
 const { createRelationUI } = require('../controllers/usuarioIndicadorController');
 const { getInformation } = require('../controllers/generalController');
@@ -213,7 +213,11 @@ const router = promisedRouter()
 router.get('/:idIndicador',
   idValidation(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador',
+    isActivo: true
+  }),
   getPublicIndicador
 );
 
@@ -243,7 +247,10 @@ router.get('/:idIndicador',
 router.get('/:idIndicador/usuarios',
   paramValidationRules(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   getUsersFromIndicador
 )
 
@@ -274,7 +281,11 @@ router.get('/:idIndicador/usuarios',
 router.get('/:idIndicador/mapa',
   idValidation(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador',
+    isActivo: true
+  }),
   getMapaOfIndicador
 );
 
@@ -361,7 +372,10 @@ router.get('/:idIndicador/historicos',
 router.get('/:idIndicador/formula',
   paramValidationRules(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   getFormulaOfIndicador
 )
 
@@ -403,7 +417,10 @@ router.patch('/:idIndicador/toggle-status',
   paramValidationRules(),
   validate,
   verifyUserHasRoles(['ADMIN']),
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   updateIndicadorStatus
 );
 
@@ -556,7 +573,10 @@ router.patch('/:idIndicador',
   updateIndicadorValidationRules(),
   validate,
   verifyUserHasRoles(['ADMIN', 'USER']),
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
   updateIndicador
 );
@@ -600,7 +620,10 @@ router.post('/:idIndicador/formula',
   createFormulaValidationRules(),
   validate,
   verifyUserHasRoles(['ADMIN', 'USER']),
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
   createFormula
 )
@@ -644,7 +667,10 @@ router.post('/:idIndicador/mapa',
   uploadImage(DESTINATIONS.MAPAS),
   mapaValidationRules(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
   createMapa
 );
