@@ -105,7 +105,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
           .get(`/api/v1/indicadores/${indicadorInactivo.id}`)
           .end((_, res) => {
             expect(res).to.have.status(409);
-            expect(res.body.message).to.be.equal('Hubo un error al consultar este indicador');
+            expect(res.body.message).to.be.equal(`"Indicador" con id "${indicadorInactivo.id}" se encuentra inactivo`);
             done();
           })
       });
