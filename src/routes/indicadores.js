@@ -756,47 +756,6 @@ router.post('/:idIndicador/historicos',
 );
 
 
-/**
- * @swagger
- *   /indicadores/{idIndicador/catalogos}:
- *     patch:
- *       summary: Update or create catalogo for an indicador
- *       tags: [Indicadores, Catalogos]
- *       security:
- *         - bearer: []
- *       parameters:
- *         - name: idIndicador
- *           in: path
- *           required: true
- *           description: The id of the indicador
- *           schema:
- *             type: integer
- *             format: int64
- *             minimum: 1
- *       responses:
- *         204:
- *           description: Operation (whether is update or create catalogo) was successful
- *         401:
- *           $ref: '#/components/responses/Unauthorized'
- *         403:
- *           $ref: '#/components/responses/Forbidden'
- *         422:
- *           $ref: '#/components/responses/UnprocessableEntity'
- *         429:
- *           $ref: '#/components/responses/TooManyRequests'
- *         500:
- *           $ref: '#/components/responses/InternalServerError'
- */
-router.patch('/:idIndicador/catalogo',
-  idValidation(),
-  updateIndicadorCatalogos(),
-  validate,
-  verifyUserHasRoles(['ADMIN', 'USER']),
-  verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
-  updateOrCreateCatalogFromIndicador,
-)
-
-
 router.post('/:idIndicador/objetivos/status',
   idValidation(),
   body('objetivos.*.id').isInt().toInt(),
