@@ -93,7 +93,7 @@ const aMapa = (id) => ({
 });
 
 const aUser = (id) => ({
-	id,
+	...(id !== undefined && { id }),
 	nombres: faker.person.firstName(),
 	apellidoPaterno: faker.person.lastName(),
 	apellidoMaterno: faker.person.lastName(),
