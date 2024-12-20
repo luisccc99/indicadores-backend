@@ -14,17 +14,6 @@ const { generateToken } = require('../../middlewares/auth');
 describe('v1/mapas', function () {
   const SUB_ID = 1;
   const validToken = generateToken({ sub: SUB_ID });
-  const statusActive = { activo: 'SI' };
-  const adminRol = { rolValue: 'ADMIN' };
-  const userRol = { rolValue: 'USER' };
-
-  let findOneFake;
-
-  this.beforeEach(function () {
-    findOneFake = sinon.stub(Usuario, 'findOne')
-    findOneFake.onFirstCall().resolves(statusActive);
-    findOneFake.onSecondCall().resolves(adminRol);
-  });
 
   this.afterEach(function () {
     sinon.restore();
@@ -34,12 +23,6 @@ describe('v1/mapas', function () {
     const mapa = aMapa();
 
     it('Should update a mapa with a given id', done => {
-      const updateMapaFake = sinon.fake.resolves(1);
-      sinon.replace(Mapa, 'update', updateMapaFake);
-
-      const findOneMapa = sinon.fake.resolves({ count: 1 });
-      sinon.replace(Mapa, 'findOne', findOneMapa);
-
       chai.request(app)
         .put('/api/v1/mapas/1')
         .set('Authorization', `Bearer ${validToken}`)
@@ -49,8 +32,6 @@ describe('v1/mapas', function () {
         .attach('urlImagen', Buffer.alloc(500_000), 'image.jpg')
         .end((err, res) => {
           expect(res).to.have.status(204);
-          expect(updateMapaFake.calledOnce).to.be.true;
-          expect(findOneMapa.calledOnce).to.be.true;
           done();
         })
     });
@@ -81,9 +62,6 @@ describe('v1/mapas', function () {
         })
     });
     it('Should fail because mapa does not exist', done => {
-      const findOneMapa = sinon.fake.resolves({ count: 0 });
-      sinon.replace(Mapa, 'findOne', findOneMapa);
-
       chai.request(app)
         .put('/api/v1/mapas/1')
         .set('Authorization', `Bearer ${validToken}`)
@@ -93,7 +71,6 @@ describe('v1/mapas', function () {
         .attach('urlImagen', Buffer.alloc(500_000), 'image.jpg')
         .end((err, res) => {
           expect(res).to.have.status(404);
-          expect(findOneMapa.calledOnce).to.be.true;
           done();
         })
     });

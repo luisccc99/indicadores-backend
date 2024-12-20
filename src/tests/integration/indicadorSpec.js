@@ -14,7 +14,7 @@ const { faker } = require('@faker-js/faker');
 const { generateToken } = require('../../middlewares/auth');
 const { expect } = chai;
 
-describe.only('/v1/indicadores (Integration tests)', () => {
+describe('/v1/indicadores (Integration tests)', () => {
   let adminRol, userRol;
   let usuarioA, usuarioB, usuarioInactivo, admin;
   let indicadorA, indicadorB, indicadorInactivo;
@@ -88,7 +88,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
     }).catch(console.log)
   })
 
-  describe.only('Public endpoints', () => {
+  describe('Public endpoints', () => {
 
     describe('GET /:idIndicador', () => {
       it('Should return 404 because indicador does not exist', done => {
@@ -207,7 +207,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
     let usuarioAToken, usuarioInactivoToken, adminToken;
 
     before(() => {
-      usuarioAToken = generateToken({ sub: usuarioAToken.id });
+      usuarioAToken = generateToken({ sub: usuarioA.id });
       usuarioInactivoToken = generateToken({ sub: usuarioInactivo.id });
       adminToken = generateToken({ sub: admin.id });
     })

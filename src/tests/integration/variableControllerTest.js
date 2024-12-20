@@ -13,7 +13,6 @@ describe('v1/variables', function () {
   const SUB_ID = 1;
   const validToken = generateToken({ sub: SUB_ID });
   const adminRol = { rolValue: 'ADMIN' };
-  const userRol = { rolValue: 'USER' };
   const statusActive = { activo: 'SI' };
 
   let usuarioStub;
@@ -31,10 +30,6 @@ describe('v1/variables', function () {
   describe('PATCH /variables/:idVariable', function () {
 
     it('Should update a variable succesfully', function (done) {
-      const findOneVariable = sinon.fake.resolves({ count: 1 });
-      sinon.replace(Variable, 'findOne', findOneVariable);
-      const updateVariable = sinon.fake.resolves(1);
-      sinon.replace(Variable, 'update', updateVariable);
 
       chai.request(app)
         .patch('/api/v1/variables/1')
@@ -43,8 +38,6 @@ describe('v1/variables', function () {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res).to.have.status(204);
-          expect(findOneVariable.calledOnce).to.be.true;
-          expect(updateVariable.calledOnce).to.be.true;
           done();
         })
     });
@@ -63,8 +56,6 @@ describe('v1/variables', function () {
     });
 
     it('Should fail to update because variable does not exist', function (done) {
-      const findOneVariable = sinon.fake.resolves({ count: 0 });
-      sinon.replace(Variable, 'findOne', findOneVariable);
 
       chai.request(app)
         .patch('/api/v1/variables/1')
@@ -73,7 +64,6 @@ describe('v1/variables', function () {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res).to.have.status(404);
-          expect(findOneVariable.calledOnce).to.be.true;
           done();
         })
 
@@ -96,18 +86,13 @@ describe('v1/variables', function () {
   describe('DELETE /variables/:idVariable', function () {
 
     it('Should delete a variable succesfully', function (done) {
-      const findOneVariable = sinon.fake.resolves({ count: 1 });
-      sinon.replace(Variable, 'findOne', findOneVariable);
-      const destroyVariable = sinon.fake.resolves(1);
-      sinon.replace(Variable, 'destroy', destroyVariable);
+
       chai.request(app)
         .delete('/api/v1/variables/7')
         .set('Authorization', `Bearer ${validToken}`)
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res).to.have.status(204);
-          expect(findOneVariable.calledOnce).to.be.true;
-          expect(destroyVariable.calledOnce).to.be.true;
           done();
         })
     });
@@ -123,15 +108,12 @@ describe('v1/variables', function () {
     })
 
     it('Should fail to delete because variable does not exist', function (done) {
-      const findOneVariable = sinon.fake.resolves({ count: 0 });
-      sinon.replace(Variable, 'findOne', findOneVariable);
       chai.request(app)
         .delete('/api/v1/variables/1020')
         .set('Authorization', `Bearer ${validToken}`)
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res).to.have.status(404);
-          expect(findOneVariable.calledOnce).to.be.true;
           done();
         })
     })

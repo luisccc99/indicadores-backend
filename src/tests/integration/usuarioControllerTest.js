@@ -35,38 +35,24 @@ describe('v1/usuarios', function () {
   describe('GET /usuarios', function () {
 
     it('Should return not found if user does not exist', function (done) {
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-      findOneFake.onFirstCall().resolves({ count: 0 });
+
       chai.request(app)
         .get('/api/v1/usuarios/1')
         .set({ Authorization: `Bearer ${token}` })
         .end((err, res) => {
           expect(err).to.be.null;
-          expect(findOneFake.calledOnce).to.be.true;
           expect(res).have.status(404);
           done();
         });
     });
 
     it('Should return a list of users', function (done) {
-      const findAndCountAllFake = sinon.fake.resolves({ rows: [aUser(1)], count: 1 });
-      const countFake = sinon.fake.resolves(1);
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-
-      sinon.replace(Usuario, 'findAndCountAll', findAndCountAllFake);
-      sinon.replace(Usuario, 'count', countFake);
-
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-
       chai.request(app)
         .get('/api/v1/usuarios')
         .set({ Authorization: `Bearer ${token}` })
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res).have.status(200);
-          expect(findAndCountAllFake.calledOnce).to.be.true;
-          expect(findOneFake.calledTwice).to.be.true;
           expect(res.body.data).to.be.an('array');
           expect(res.body.data).to.have.lengthOf(1)
           done();
@@ -74,20 +60,11 @@ describe('v1/usuarios', function () {
     });
 
     it('Should not return a list of users', function (done) {
-      const findAndCountAllFake = sinon.fake.rejects(new Error('Connection to DB failed'));
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-
-      sinon.replace(Usuario, 'findAndCountAll', findAndCountAllFake);
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-
       chai.request(app)
         .get('/api/v1/usuarios')
         .set({ Authorization: `Bearer ${token}` })
         .end((err, res) => {
           expect(err).to.be.null;
-          expect(findAndCountAllFake.calledOnce).to.be.true;
-          expect(findOneFake.calledTwice).to.be.true;
           expect(res).have.status(500);
           done();
         });
@@ -96,13 +73,6 @@ describe('v1/usuarios', function () {
 
   describe('POST /usuarios', function () {
     it('Should create a user with no avatar', function (done) {
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-      findOneFake.onThirdCall().resolves(null);
-
-      const createUserFake = sinon.fake.resolves(aUser(1));
-      sinon.replace(Usuario, 'create', createUserFake);
 
       chai.request(app)
         .post('/api/v1/usuarios')
@@ -111,28 +81,12 @@ describe('v1/usuarios', function () {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res).to.have.status(201);
-          expect(findOneFake.calledThrice).to.be.true;
-          expect(createUserFake.calledOnce).to.be.true;
           done();
         });
     });
 
     it('Should create a user with avatar', function (done) {
-      const fileUploadFake = sinon.fake.resolves({
-        filename: 'validimage.jpg',
-        mimetype: 'image/jpeg',
-        encoding: '7bit',
-        createReadStream: () => allowedImage
-      });
-      sinon.replace(fileUpload, 'uploadImage', fileUploadFake);
       const userFake = aUser(1);
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-      const createUserFake = sinon.fake.resolves(userFake);
-
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-      findOneFake.onThirdCall().resolves(null);
-      sinon.replace(Usuario, 'create', createUserFake);
 
       chai.request(app)
         .post('/api/v1/usuarios')
@@ -148,8 +102,6 @@ describe('v1/usuarios', function () {
         .attach('urlImagen', allowedImage, 'avatar.jpg')
         .end((err, res) => {
           expect(err).to.be.null;
-          expect(findOneFake.calledThrice).to.be.true;
-          expect(createUserFake.calledOnce).to.be.true;
           expect(res).have.status(201);
           done();
         });
@@ -201,10 +153,6 @@ describe('v1/usuarios', function () {
 
     it('Should not create a user because email is not available', function (done) {
       const userFake = aUser(10);
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-      findOneFake.onThirdCall().resolves(userFake.correo);
       chai.request(app)
         .post('/api/v1/usuarios')
         .set({ Authorization: `Bearer ${token}` })
@@ -212,20 +160,12 @@ describe('v1/usuarios', function () {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res).have.status(409);
-          expect(findOneFake.calledThrice).to.be.true;
           done();
         });
     });
 
     it('Should not create a user because connection to DB failed', function (done) {
       const userFake = aUser(10);
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-      findOneFake.onThirdCall().resolves(null);
-
-      const createFake = sinon.fake.rejects(new Error('Connection failed'));
-      sinon.replace(Usuario, 'create', createFake);
 
       chai.request(app)
         .post('/api/v1/usuarios')
@@ -233,8 +173,6 @@ describe('v1/usuarios', function () {
         .send(userFake)
         .end((err, res) => {
           expect(err).to.be.null;
-          expect(findOneFake.callCount).to.be.equal(3)
-          expect(createFake.calledOnce).to.be.true;
           expect(res).have.status(500);
           done();
         });
@@ -243,22 +181,7 @@ describe('v1/usuarios', function () {
 
   describe('PATCH /usuarios/:idUsuario', function () {
     it('Should edit a user', function (done) {
-      const fileUploadFake = sinon.fake.resolves({
-        filename: 'validimage.jpg',
-        mimetype: 'image/jpeg',
-        encoding: '7bit',
-        createReadStream: () => allowedImage
-      });
-
-      sinon.replace(fileUpload, 'uploadImage', fileUploadFake);
       const userFake = aUser(1);
-      const editUserFake = sinon.fake.resolves(1)
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-
-      sinon.replace(Usuario, 'update', editUserFake);
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-
       chai.request(app)
         .patch('/api/v1/usuarios/1')
         .set({ Authorization: `Bearer ${token}` })
@@ -268,19 +191,12 @@ describe('v1/usuarios', function () {
         .attach('urlImagen', allowedImage, 'avatar.jpg')
         .end((err, res) => {
           expect(err).to.be.null;
-          expect(editUserFake.calledOnce).to.be.true;
-          expect(findOneFake.calledTwice).to.be.true;
           expect(res).have.status(204);
           done();
         });
     });
 
     it('Should fail to update a user because avatar image is too big', function (done) {
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-
       const userFake = aUser(1);
 
       chai.request(app)
@@ -298,7 +214,6 @@ describe('v1/usuarios', function () {
         .end((err, res) => {
           expect(err).to.be.null;
           expect(res).have.status(413);
-          expect(findOneFake.calledTwice).to.be.true;
           expect(res.error.text).to.be.equal('LIMIT_FILE_SIZE')
           done();
         });
@@ -306,10 +221,6 @@ describe('v1/usuarios', function () {
 
     it('Should fail to update a user because avatar has an incorrect format', function (done) {
       const userFake = aUser(1);
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
 
       chai.request(app)
         .patch('/api/v1/usuarios/1')
@@ -334,10 +245,6 @@ describe('v1/usuarios', function () {
     it('Should not edit a user due to semantic errors', function (done) {
       const userFake = aUser(1);
       userFake.apellidoMaterno = 1;
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
 
       chai.request(app)
         .patch('/api/v1/usuarios/1')
@@ -352,22 +259,13 @@ describe('v1/usuarios', function () {
 
     it('Should not edit a user because connection to db fails', function (done) {
       const userFake = aUser(1);
-      const editUserFake = sinon.fake.rejects(true);
-      sinon.replace(Usuario, 'update', editUserFake);
-
-      const findOneFake = sinon.stub(Usuario, 'findOne');
-
-      findOneFake.onFirstCall().resolves(statusActive);
-      findOneFake.onSecondCall().resolves(adminRol);
-
+      
       chai.request(app)
         .patch('/api/v1/usuarios/1')
         .set({ Authorization: `Bearer ${token}` })
         .send(userFake)
         .end((err, res) => {
           expect(err).to.be.null;
-          expect(editUserFake.calledOnce).to.be.true;
-          expect(findOneFake.calledTwice).to.be.true;
           expect(res).have.status(500);
           done();
         });

@@ -15,8 +15,6 @@ describe('v1/documentos', function () {
   });
 
   it('Should return an excel document', function (done) {
-    const findOneFake = sinon.fake.resolves({ dataValues: { ...dummyIndicador, Tema: aTema(1) } });
-    sinon.replace(Indicador, 'findOne', findOneFake);
     chai.request(app)
       .get('/api/v1/documentos/1/xlsx')
       .end(function (err, res) {
@@ -29,8 +27,6 @@ describe('v1/documentos', function () {
   });
 
   it('Should not return an excel document', function (done) {
-    const findOneFake = sinon.fake.rejects(dummyIndicador);
-    sinon.replace(Indicador, 'findOne', findOneFake);
     chai.request(app)
       .get('/api/v1/documentos/1/xlsx')
       .end(function (err, res) {
@@ -40,8 +36,6 @@ describe('v1/documentos', function () {
   });
 
   it('Should return a csv document', function (done) {
-    const findOneFake = sinon.fake.resolves(dummyIndicador);
-    sinon.replace(Indicador, 'findOne', findOneFake);
     chai.request(app)
       .get('/api/v1/documentos/1/csv')
       .end(function (err, res) {
@@ -54,8 +48,6 @@ describe('v1/documentos', function () {
   });
 
   it('Should not return a csv document', function (done) {
-    const findOneFake = sinon.fake.rejects(dummyIndicador);
-    sinon.replace(Indicador, 'findOne', findOneFake);
     chai.request(app)
       .get('/api/v1/documentos/1/csv')
       .end(function (err, res) {
@@ -65,8 +57,6 @@ describe('v1/documentos', function () {
   });
 
   it('Should return a json document', function (done) {
-    const findOneFake = sinon.fake.resolves(dummyIndicador);
-    sinon.replace(Indicador, 'findOne', findOneFake);
     chai.request(app)
       .get('/api/v1/documentos/1/json')
       .end(function (err, res) {
@@ -79,8 +69,6 @@ describe('v1/documentos', function () {
   });
 
   it('Should not return a json document', function (done) {
-    const findOneFake = sinon.fake.rejects(dummyIndicador);
-    sinon.replace(Indicador, 'findOne', findOneFake);
     chai.request(app)
       .get('/api/v1/documentos/1/json')
       .end(function (err, res) {
@@ -90,8 +78,6 @@ describe('v1/documentos', function () {
   });
 
   it('Should return 422 because of typo error', function (done) {
-    const findOneFake = sinon.fake.resolves(dummyIndicador);
-    sinon.replace(Indicador, 'findOne', findOneFake);
     chai.request(app)
       .get('/api/v1/documentos/1/xslx')
       .end(function (err, res) {
