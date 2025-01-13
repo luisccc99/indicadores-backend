@@ -201,7 +201,6 @@ temaRouter.route('/')
  *           $ref: '#/components/responses/InternalServerError'
  *
  */
-// TODO: Validate tema is active
 indicadorRouter.route('/')
     .get(
         paramValidationRules(),
@@ -209,7 +208,7 @@ indicadorRouter.route('/')
         filterIndicadoresValidationRules(),
         sortValidationRules(),
         validate,
-        verifyResourceExists('idTema', 'Tema'),
+        verifyResourceExists({ routeParam: 'idTema', model: 'Tema', activo: true }),
         determinePathway(SITE_PATH),
         getPublicIndicadores
     );
@@ -313,7 +312,7 @@ temaRouter.route('/:idTema')
         uploadImage(DESTINATIONS.TEMASS),
         updateTemaValidationRules(),
         validate,
-        verifyResourceExists('idTema', 'Tema'),
+        verifyResourceExists({ model: 'Tema', routeParam: 'idTema' }),
         editTema
     );
 
