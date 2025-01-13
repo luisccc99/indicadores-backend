@@ -1,5 +1,5 @@
 'use strict';
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 const { hashClave } = require('../middlewares/auth');
 
 module.exports = {
@@ -16,13 +16,13 @@ module.exports = {
       createdAt: new Date(),
       updatedAt: new Date(),
       idRol: 1,
-      requestedPasswordChange: 'NO',
+      requestedPasswordChange: false,
       descripcion: 'Lorem ipsum dolor at eit',
     });
 
     for (let i = 0; i < 10; i++) {
-      const firstName = faker.name.firstName();
-      const lastName = faker.name.lastName();
+      const firstName = faker.person.firstName();
+      const lastName = faker.person.lastName();
       usuarios.push({
         correo: faker.internet.email(firstName, lastName),
         clave,

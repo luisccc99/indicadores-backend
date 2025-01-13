@@ -1,6 +1,6 @@
 'use strict';
 
-const faker = require("faker");
+const { faker } = require("@faker-js/faker");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -8,7 +8,7 @@ module.exports = {
     for (let i = 0; i < 300; i++) {
       const idCatalogo = (i % 3) + 1;
       catalogoDetails.push({
-        nombre: `${faker.random.word()}-${i}`,
+        nombre: `${faker.lorem.word()}-${i}`,
         idCatalogo,
         createdAt: new Date(),
         updatedAt: new Date()

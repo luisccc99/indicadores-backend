@@ -1,5 +1,5 @@
 'use strict';
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 const { aCodigo } = require('../utils/factories');
 
 module.exports = {
@@ -8,15 +8,15 @@ module.exports = {
     for (let i = 0; i < 20; i++) {
       temas.push(
         {
-          temaIndicador: faker.random.word() + (i + 100),
-          observaciones: faker.random.words(5),
-          activo: i % 2 === 0 ? 'SI' : 'NO',
+          temaIndicador: faker.lorem.word() + (i + 100),
+          observaciones: faker.lorem.words(5),
+          activo: i % 2 === 0,
           codigo: aCodigo(),
-          descripcion: faker.random.words(10),
+          descripcion: faker.lorem.words(10),
           createdAt: new Date(),
           updatedAt: new Date(),
-          urlImagen: faker.image.imageUrl(),
-          color: faker.commerce.color()
+          urlImagen: faker.image.url(),
+          color: faker.internet.color()
         }
       );
     }

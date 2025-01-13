@@ -1,5 +1,5 @@
 "use strict";
-const faker = require("faker");
+const { faker } = require("@faker-js/faker");
 const { aCodigo, randomYear } = require("../utils/factories");
 
 module.exports = {
@@ -10,22 +10,18 @@ module.exports = {
       const date = new Date();
       indicadores.push({
         id: i + 1,
-        urlImagen: faker.image.imageUrl(),
-        codigo,
-        nombre: `Indicador ${faker.random.word()}`,
+        urlImagen: faker.image.url(),
+        nombre: `Indicador ${faker.lorem.word()}`,
         definicion: faker.lorem.sentence(),
         observaciones: faker.lorem.sentence(),
-        ultimoValorDisponible: faker.datatype.number(),
+        ultimoValorDisponible: faker.number.float(),
         anioUltimoValorDisponible: randomYear(),
         createdBy: 1,
         updatedBy: 1,
         activo: true,
-        fuente: faker.random.word(5),
-        periodicidad: faker.datatype.number(15),
-        owner: 1,
+        fuente: faker.lorem.word(5),
+        periodicidad: faker.number.int(15),
         archive: false,
-        idTema: 1,
-        idObjetivo: 1,
         createdAt: date,
         updatedAt: date,
         tendenciaActual: i % 2 === 0 ? "ASCENDENTE" : "DESCENDENTE",
