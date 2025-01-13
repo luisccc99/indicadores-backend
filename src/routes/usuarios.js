@@ -1,7 +1,9 @@
 const express = require('express');
 const { query } = require('express-validator');
+const promisedRouter = require('express-promise-router');
 
-const router = express.Router();
+const router = promisedRouter();
+
 const { getUsers,
   createUser,
   getUserFromId,

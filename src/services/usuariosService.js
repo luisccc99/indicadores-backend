@@ -154,7 +154,7 @@ const countInactiveUsers = async () => {
     }
 }
 
-// returns true if usuario was updated
+
 const updateUsuario = async (id, fieldsWithImage) => {
     try {
         const affectedRows = await Usuario.update(
@@ -162,6 +162,7 @@ const updateUsuario = async (id, fieldsWithImage) => {
             { where: { id } });
         return affectedRows > 0;
     } catch (err) {
+        logger.error(err.stack)
         throw new Error(`Error al actualizar usuario: ${err.message}`);
     }
 };
@@ -270,7 +271,7 @@ const isUserActive = async (id) => {
             where: { id },
             raw: true
         });
-        return status?.activo === 'SI';
+        return status?.activo;
     } catch (err) {
         throw new Error(`Error al obtener estado de usuario ${err.message}`);
     }
