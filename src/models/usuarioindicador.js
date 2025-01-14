@@ -37,19 +37,20 @@ module.exports = (sequelize, DataTypes) => {
                 },
             },
 
-            fechaDesde: {
-                type: DataTypes.DATEONLY,
-                allowNull: true
-            },
-
-            fechaHasta: {
-                type: DataTypes.DATEONLY,
-                allowNull: true
-            },
-
             createdBy: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+            },
+
+            notified: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
+
+            notifiedAt: {
+                type: DataTypes.DATE,
+                allowNull: true,
             },
 
             updatedBy: {
@@ -66,20 +67,6 @@ module.exports = (sequelize, DataTypes) => {
                 }
             },
 
-            expires: {
-                type: DataTypes.STRING,
-                allowNull: true,
-                defaultValue: 'SI',
-                validate: {
-                    isIn: [['SI', 'NO']]
-                }
-            },
-
-            isOwner: {
-                type: DataTypes.BOOLEAN,
-                allowNull: false,
-                defaultValue: false
-            }
         },
         {
             indexes: [

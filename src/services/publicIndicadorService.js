@@ -24,7 +24,7 @@ async function getIndicadorById(id, attributes) {
         "id", "nombre", "ultimoValorDisponible",
         "adornment", "definicion", "anioUltimoValorDisponible",
         "tendenciaActual", "fuente", "updatedAt",
-        "periodicidad", "archive", "unidadMedida",
+        "periodicidad", "archive", "unidadMedida", "elif"
     ]
     try {
         const indicador = await Indicador.findOne({

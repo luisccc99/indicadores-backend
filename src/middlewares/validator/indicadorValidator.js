@@ -148,7 +148,8 @@ const updateIndicadorValidationRules = () => [
         'definicion',
         'fuente',
         'observaciones',
-        'unidadMedida'
+        'unidadMedida',
+        'elif'
     ])
         .optional()
         .trim(),
