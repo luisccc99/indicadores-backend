@@ -11,8 +11,13 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.changeColumn('Indicadores', 'activo', {
-      type: `VARCHAR(255) USING CAST(CASE WHEN "activo" = true THEN 'SI' ELSE 'NO' END AS VARCHAR(255))`,
+    await queryInterface.changeColumn('Usuarios', 'activo', {
+      type: `VARCHAR(255) USING 
+      CAST(CASE
+        WHEN "activo" = true THEN 'SI'
+        WHEN "activo" IS NULL THEN 'NO'
+        ELSE 'NO' 
+      END AS VARCHAR(255))`,
     })
   }
 };
