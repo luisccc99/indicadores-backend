@@ -241,6 +241,7 @@ const defineAttributes = (pathway, matchedData) => {
   const attributes = [
     "id",
     "nombre",
+    'elif',
     "ultimoValorDisponible",
     "activo",
     "anioUltimoValorDisponible",

@@ -158,7 +158,8 @@ const updateIndicadorValidationRules = () => [
         'periodicidad',
         'ultimoValorDisponible',
         'updatedBy',
-        'idOds'
+        'idOds',
+        'elif'
     ])
         .optional()
         .trim(),
