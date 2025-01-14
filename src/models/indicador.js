@@ -144,6 +144,21 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: false
             },
 
+            elif: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                defaultValue: null
+            },
+
+            idTema: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                references: {
+                    model: 'Temas',
+                    key: 'id'
+                },
+            },
+
             idCobertura: {
                 type: DataTypes.INTEGER,
                 allowNull: true,

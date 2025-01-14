@@ -68,8 +68,6 @@ const createIndicador = async (indicador) => {
 const assignOwnerToIndicador = async (idUsuario, idIndicador) => {
   return createRelation(
     [idUsuario], [idIndicador], {
-    fechaDesde: null,
-    fechaHasta: null,
     updatedBy: idUsuario,
     createdBy: idUsuario,
     expires: 'NO',

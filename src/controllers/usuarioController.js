@@ -118,8 +118,6 @@ const setIndicadoresToUsuario = async (req, res, next) => {
       [idUsuario],
       [...indicadores],
       {
-        fechaDesde: desde,
-        fechaHasta: hasta,
         createdBy,
         updatedBy
       });

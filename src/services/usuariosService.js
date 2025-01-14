@@ -198,19 +198,11 @@ const getIndicadoresFromUser = async (id) => {
             },
             include: {
                 model: Indicador,
-                attributes: {
-                    include: [
-                        [Sequelize.literal('"indicadores->usuarioIndicador"."fechaHasta" - CURRENT_DATE'), 'remainingDays']
-                    ]
-                },
                 through: {
                     as: 'usuarioIndicador',
                     attributes: [],
                     where: {
                         activo: 'SI',
-                        fechaHasta: {
-                            [Op.gte]: Sequelize.literal('CURRENT_DATE')
-                        }
                     }
                 }
             }
@@ -326,8 +318,6 @@ const getUsersFromIndicador = async (id) => {
             },
             attributes: [
                 'idUsuario',
-                'fechaDesde',
-                'fechaHasta',
                 'activo',
                 [sequelize.literal('"usuario"."nombres"'), "nombres"],
                 [sequelize.literal('"usuario"."apellidoPaterno"'), "apellido"],

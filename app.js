@@ -9,6 +9,7 @@ const path = require('path')
 const logger = require('./src/config/logger');
 const logErrors = require('./src/middlewares/log');
 const scheduler = require('./src/middlewares/scheduler');
+const sender = require('./src/middlewares/mailSender');
 
 const PORT = process.env.PORT || 8080;
 const env = process.env.NODE_ENV || 'development';
