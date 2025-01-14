@@ -2,7 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 require('dotenv').config();
 chai.use(chaiHttp);
-const { aMapa, aUser, indicadorToCreate } = require("../../utils/factories")
+const { aMapa, aUser, indicadorToCreate, anHistorico, aFormula, aVariable } = require("../../utils/factories")
 const { app } = require('../../../app');
 const {
   Indicador, Usuario, Rol,
@@ -13,9 +13,10 @@ const {
 } = require('../../models');
 const { faker } = require('@faker-js/faker');
 const { generateToken } = require('../../middlewares/auth');
+const { getIndicadorDTO } = require('../utils/commonStubs');
 const { expect } = chai;
 
-describe.only('/v1/indicadores (Integration tests)', () => {
+describe('/v1/indicadores (Integration tests)', () => {
   let adminRol, userRol;
   let usuarioA, usuarioB, usuarioInactivo, admin;
   let indicadorA, indicadorB, indicadorInactivo;
@@ -92,7 +93,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
     }).catch(console.log)
   })
 
-  describe.only('Public endpoints', () => {
+  describe('Public endpoints', () => {
 
     describe('GET /:idIndicador', () => {
       it('Should return 404 because indicador does not exist', done => {
@@ -342,18 +343,61 @@ describe.only('/v1/indicadores (Integration tests)', () => {
     })
 
     describe('GET /', () => {
-      it('Should test getIndicadores')
+      it('Should return list of indicadores', done => {
+        chai.request(app)
+          .get('/api/v1/indicadores')
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
+          .end((_err, res) => {
+            expect(res).to.have.status(200);
+            expect(res.body.data).to.be.an('array').that.is.not.empty;
+            expect(res.body.data).to.not.be.undefined;
+            // private field that only this endpoint with the bearer token can return 
+            expect(Object.keys(res.body.data[0])).to.include('updatedBy');
+            done();
+          })
+      })
+
+      it('Should fail to return list because user is not active', done => {
+        chai.request(app)
+          .get('/api/v1/indicadores')
+          .set({ Authorization: `Bearer ${usuarioInactivoToken}` })
+          .end((_err, res) => {
+            expect(res).to.have.status(403);
+            expect(res.text).to.be.equal('Esta cuenta se encuentra deshabilitada')
+            done();
+          })
+      })
+
+      it('Should fail because query params are wrong', done => {
+        chai.request(app)
+          .get('/api/v1/indicadores?activo=invalidValue')
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
+          .end((_err, res) => {
+            expect(res).to.have.status(422);
+            expect(res.body.errors).to.be.an('array').that.is.not.empty;
+            done()
+          })
+      })
+
+      it('Should fail because request does not have auth token', done => {
+        chai.request(app)
+          .get('/api/v1/indicadores')
+          .end((_err, res) => {
+            expect(res).to.have.status(401);
+            done();
+          })
+      })
     })
 
 
     describe('POST /', () => {
-
+      const validIndicador = getIndicadorDTO();
       it('Should create an indicador successfully', function (done) {
         const toCreate = indicadorToCreate();
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .type('form')
           .send(toCreate)
           .end(function (_err, res) {
@@ -372,7 +416,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(toCreate)
           .end(function (_err, res) {
             expect(res).to.have.status(201);
@@ -392,7 +436,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .type('form')
           .send(dto)
           .end(function (err, res) {
@@ -409,7 +453,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(toCreate)
           .end(function (err, res) {
             expect(err).to.be.null;
@@ -427,7 +471,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(toCreate)
           .end(function (err, res) {
             expect(err).to.be.null;
@@ -443,7 +487,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(toCreate)
           .end(function (_err, res) {
             expect(res).to.have.status(201);
@@ -459,7 +503,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(toCreate)
           .end(function (err, res) {
             expect(err).to.be.null;
@@ -474,7 +518,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(invalidIndicador)
           .end((err, res) => {
             expect(err).to.be.null;
@@ -510,7 +554,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .post('/api/v1/indicadores')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(validIndicador)
           .end(function (err, res) {
             expect(res).to.have.status(500);
@@ -528,7 +572,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .patch('/api/v1/indicadores/1')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(validIndicador)
           .end((_err, res) => {
             expect(res).to.have.status(403);
@@ -545,7 +589,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .patch('/api/v1/indicadores/1')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(invalidIndicador)
           .end(function (err, res) {
             expect(res).to.have.status(422);
@@ -578,7 +622,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .patch('/api/v1/indicadores/1')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(validIndicador)
           .end(function (err, res) {
             expect(res).to.have.status(500);
@@ -592,7 +636,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
 
         chai.request(app)
           .patch('/api/v1/indicadores/1')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(validIndicador)
           .end(function (err, res) {
             expect(err).to.be.null;
@@ -604,7 +648,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
       it('Should update indicador successfully (user rol)', function (done) {
         chai.request(app)
           .patch('/api/v1/indicadores/1')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .send(validIndicador)
           .end(function (err, res) {
             expect(res).to.have.status(204);
@@ -619,7 +663,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
       it('Should return formula and variables of an indicador', function (done) {
         chai.request(app)
           .get('/api/v1/indicadores/1/formula')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .end((err, res) => {
             expect(err).to.be.null;
             expect(res).to.have.status(200);
@@ -635,7 +679,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
       it('Should return no data because indicador does not have formula', function (done) {
         chai.request(app)
           .get('/api/v1/indicadores/1/formula')
-          .set({ Authorization: `Bearer ${validToken}` })
+          .set({ Authorization: `Bearer ${usuarioAToken}` })
           .end((err, res) => {
             expect(res).to.have.status(200);
             expect(res.body.data).to.be.an('object').and.be.empty;
@@ -665,7 +709,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
         const formula = aFormula(1);
         chai.request(app)
           .post('/api/v1/indicadores/1/formula')
-          .set('Authorization', `Bearer ${validToken}`)
+          .set('Authorization', `Bearer ${usuarioAToken}`)
           .send(formula)
           .end((err, res) => {
             expect(err).to.be.null;
@@ -678,7 +722,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
         const formulaWithVariables = { ...aFormula(), variables: [aVariable(1), aVariable(2)] }
         chai.request(app)
           .post('/api/v1/indicadores/1/formula')
-          .set('Authorization', `Bearer ${validToken}`)
+          .set('Authorization', `Bearer ${usuarioAToken}`)
           .send(formulaWithVariables)
           .end((err, res) => {
             expect(err).to.be.null;
@@ -691,7 +735,7 @@ describe.only('/v1/indicadores (Integration tests)', () => {
         const formulaWithVariables = { ...aFormula(), variables: [aVariable(1)] }
         chai.request(app)
           .post('/api/v1/indicadores/1/formula')
-          .set('Authorization', `Bearer ${validToken}`)
+          .set('Authorization', `Bearer ${usuarioAToken}`)
           .send(formulaWithVariables)
           .end((err, res) => {
             expect(err).to.be.null;

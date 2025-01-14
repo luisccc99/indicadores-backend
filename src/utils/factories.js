@@ -44,25 +44,25 @@ const anIndicador = (id, options) => {
 	return indicador;
 }
 
+
 // TODO: take into account express-validator rules
-const indicadorToCreate = () => {
-	const indicador = Indicador.build({
-		id: faker.number.int(),
-		nombre: faker.word.sample(),
-		codigo: aCodigo(),
-		definicion: faker.lorem.sentence(),
-		ultimoValorDisponible: faker.number.int(),
-		anioUltimoValorDisponible: randomYear(),
-		periodicidad: faker.number.int({ min: 1, max: 120 }),
-		tendenciaActual: faker.datatype.boolean() ? "ASCENDENTE" : "DESCENDENTE",
-		observaciones: faker.word.sample(10),
-		fuente: faker.internet.url(),
-		urlImagen: faker.image.avatar(),
-		idObjetivo: 1,
-		idTema: 1
-	});
-	return indicador.dataValues;
-}
+const indicadorToCreate = ({ temas, idObjetivo, idOds, idCobertura }) => ({
+	nombre: faker.word.sample(),
+	definicion: faker.lorem.sentence(),
+	ultimoValorDisponible: faker.number.int({ min: -1231, max: 2911 }),
+	anioUltimoValorDisponible: faker.date.past().getFullYear(),
+	periodicidad: faker.number.int({ min: 1, max: 48 }),
+	
+	formula: {
+
+	},
+	tendenciaActual: faker.datatype.boolean() ? "ASCENDENTE" : "DESCENDENTE",
+	observaciones: faker.word.sample(10),
+	fuente: faker.internet.url(),
+	urlImagen: faker.image.avatar(),
+	idObjetivo: 1,
+	idTema: 1
+})
 
 const aFormula = (id) => ({
 	...(id && { id }),
