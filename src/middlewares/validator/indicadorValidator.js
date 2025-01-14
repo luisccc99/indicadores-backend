@@ -143,29 +143,21 @@ const createIndicadorValidationRules = () => [
 
 const updateIndicadorValidationRules = () => [
     body([
-        'codigo',
-        'codigoObjeto'
-    ])
-        .optional()
-        .isLength({ max: 3 })
-        .matches(/\d{3}$/),
-    body([
+        'nombre',
+        'adornment',
         'definicion',
         'fuente',
-        'nombre',
         'observaciones',
-        'owner',
-        'periodicidad',
-        'ultimoValorDisponible',
-        'updatedBy',
-        'idOds',
+        'unidadMedida',
         'elif'
     ])
         .optional()
         .trim(),
-    body([
-        'activo',
-    ])
+    body('ultimoValorDisponible')
+        .optional()
+        .isNumeric()
+        .toFloat(),
+    body('activo')
         .optional()
         .isBoolean()
         .toBoolean(),
@@ -176,18 +168,13 @@ const updateIndicadorValidationRules = () => [
     body([
         'idOds',
         'idCobertura',
-        'idUnidadMedida',
         'idTema',
         'idObjetivo',
-        'anioUltimoValorDisponible'
+        'anioUltimoValorDisponible',
+        'periodicidad'
     ])
         .optional()
         .isInt().toInt(),
-    body([
-        'catalogos.*.id',
-    ])
-        .isInt()
-        .toInt(),
     body('temas')
         .optional()
         .isArray()
@@ -200,13 +187,6 @@ const updateIndicadorValidationRules = () => [
         .customSanitizer(objetivos => objetivos.map(t => {
             return typeof t === 'string' ? JSON.parse(t) : t
         })),
-    body('metas')
-        .optional()
-        .isArray()
-        .customSanitizer(metas => metas.map(t => {
-            return typeof t === 'string' ? JSON.parse(t) : t
-        })),
-
     body('archive').optional().isBoolean(),
     body('archive').default(false)
 ];

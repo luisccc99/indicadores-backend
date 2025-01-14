@@ -40,7 +40,7 @@ async function getIndicadores({ page = 1, perPage = 25, offset = null, searchQue
             attributes: [
                 'id', 'nombre', 'activo', 'tendenciaActual', 'ultimoValorDisponible',
                 'adornment', 'unidadMedida', 'anioUltimoValorDisponible', 'updatedAt', 'createdAt',
-                'createdBy', 'updatedBy', 'observaciones', 'periodicidad'
+                'createdBy', 'updatedBy', 'observaciones', 'periodicidad', 'elif'
             ],
             where: {
                 ...(activo !== null && { activo }),
@@ -133,7 +133,7 @@ const getIndicadorById = async (idIndicador, attributes) => {
             includeResponsible(['id', 'nombres', 'correo']),
         ]
     })
-    return indicador.get({ plain: true });
+    return indicador?.get({ plain: true });
 }
 
 
