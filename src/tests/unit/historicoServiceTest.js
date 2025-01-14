@@ -6,7 +6,6 @@ const { expect } = chai;
 const { Historico } = require('../../models');
 
 const HistoricoService = require('../../services/historicoService');
-const { server } = require('../../../app');
 const { someHistoricos } = require('../../utils/factories');
 
 describe('Historicos service', function () {
@@ -15,11 +14,6 @@ describe('Historicos service', function () {
     this.afterEach(function () {
         sinon.restore();
     });
-
-    this.afterAll(function () {
-        server.close();
-    });
-
 
     describe('Read operations', function () {
         it('Should return a list of historicos with an INNER JOIN from indicadores', function () {

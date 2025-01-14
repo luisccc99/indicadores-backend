@@ -1,5 +1,5 @@
 'use strict';
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 const { hashClave } = require('../middlewares/auth');
 
 module.exports = {
@@ -12,17 +12,17 @@ module.exports = {
       nombres: 'John',
       apellidoPaterno: 'Doe',
       descripcion: 'Usuario de sistema de indicadores',
-      activo: 'SI',
+      activo: true,
       createdAt: new Date(),
       updatedAt: new Date(),
       idRol: 1,
-      requestedPasswordChange: 'NO',
+      requestedPasswordChange: false,
       descripcion: 'Lorem ipsum dolor at eit',
     });
 
     for (let i = 0; i < 10; i++) {
-      const firstName = faker.name.firstName();
-      const lastName = faker.name.lastName();
+      const firstName = faker.person.firstName();
+      const lastName = faker.person.lastName();
       usuarios.push({
         correo: faker.internet.email(firstName, lastName),
         clave,
@@ -31,7 +31,7 @@ module.exports = {
         apellidoMaterno: lastName,
         descripcion: faker.lorem.words(5),
         urlImagen: 'https://lorempokemon.fakerapi.it/pokemon/200/280',
-        activo: i % 2 === 0 ? 'SI' : 'NO',
+        activo: i % 2 === 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         idRol: (i % 2) + 1

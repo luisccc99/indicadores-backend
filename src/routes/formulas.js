@@ -1,6 +1,6 @@
 const { updateFormula, addVariablesToFormula } = require('../controllers/formulaController');
 const { verifyUserHasRoles, verifyUserIsActive, verifyJWT } = require('../middlewares/auth');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const { updateValidationRules } = require('../middlewares/validator/formulaValidator');
 const { paramValidationRules, validate, idValidation } = require('../middlewares/validator/generalValidator');
 const { createVariableValidationRules, variablesChain } = require('../middlewares/validator/variableValidator');
@@ -87,7 +87,10 @@ router.route('/:idFormula')
     paramValidationRules(),
     updateValidationRules(),
     validate,
-    exists('idFormula', 'Formula'),
+    verifyResourceExists({
+      routeParam: 'idFormula',
+      model: 'Formula'
+    }),
     verifyUserCanPerformActionOnIndicador({ relatedTo: { model: 'Formula', pathId: 'idFormula' } }),
     updateFormula
   );
@@ -139,7 +142,10 @@ router.route('/:idFormula/variables')
     variablesChain(),
     createVariableValidationRules(),
     validate,
-    exists('idFormula', 'Formula'),
+    verifyResourceExists({
+      routeParam: 'idFormula',
+      model: 'Formula'
+    }),
     verifyUserCanPerformActionOnIndicador({ relatedTo: { model: 'Formula', pathId: 'idFormula' } }),
     addVariablesToFormula
   )

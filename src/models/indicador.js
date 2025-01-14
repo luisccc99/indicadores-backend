@@ -62,7 +62,7 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false
             },
 
-            // TODO: Add migration to change datatype
+
             definicion: {
                 type: DataTypes.TEXT,
                 allowNull: false,

@@ -39,11 +39,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: ''
     },
 
-    // TODO: Add migration to allow null years
+  
     anio: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: 0
     }
 
   }, {

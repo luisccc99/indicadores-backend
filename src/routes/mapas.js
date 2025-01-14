@@ -3,7 +3,7 @@ const { idValidation, validate } = require('../middlewares/validator/generalVali
 const { mapaValidationRules } = require('../middlewares/validator/mapaValidator');
 const { DESTINATIONS } = require('../services/fileService');
 const { updateMapa } = require('../controllers/mapaController');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const { verifyJWT, verifyUserIsActive, verifyUserHasRoles } = require('../middlewares/auth');
 const { verifyUserCanPerformActionOnIndicador } = require('../middlewares/verifyUserCanPerformAction');
 
@@ -79,7 +79,10 @@ router.route('/:idMapa')
     uploadImage(DESTINATIONS.MAPAS),
     mapaValidationRules(),
     validate,
-    exists('idMapa', 'Mapa'),
+    verifyResourceExists({
+      routeParam: 'idMapa',
+      model: 'Mapa'
+    }),
     verifyUserCanPerformActionOnIndicador({ relatedTo: { model: 'Mapa', pathId: 'idMapa' } }),
     updateMapa
   );

@@ -2,18 +2,17 @@
 /* eslint-disable prefer-arrow-callback */
 /* eslint-disable import/no-extraneous-dependencies */
 const chai = require('chai');
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 const sinon = require('sinon');
 const UsuarioService = require('../../services/usuariosService');
 
 const { expect } = chai;
 const { Usuario } = require('../../models');
-const { server } = require('../../../app')
 const { aUser, anIndicador } = require('../../utils/factories');
 
 describe('User service', function () {
 
-    const usuario = aUser(faker.datatype.number());
+    const usuario = aUser(faker.number.int());
     const indicadoresFromUser = [
         anIndicador(1),
         anIndicador(2),
@@ -24,11 +23,6 @@ describe('User service', function () {
     this.afterEach(function () {
         sinon.restore();
     });
-
-    this.afterAll(function () {
-        server.close();
-    });
-
     describe('Read operations', function () {
         const userList = [aUser(1), aUser(2), aUser(3)]
 

@@ -1,7 +1,9 @@
 const express = require('express');
 const { query } = require('express-validator');
+const promisedRouter = require('express-promise-router');
 
-const router = express.Router();
+const router = promisedRouter();
+
 const { getUsers,
   createUser,
   getUserFromId,
@@ -24,7 +26,7 @@ const {
   generalSortValidationRules,
   idValidation
 } = require('../middlewares/validator/generalValidator')
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const { DESTINATIONS } = require('../services/fileService');
 const { determineModel } = require('../middlewares/determinePathway');
 const { getInformation } = require('../controllers/generalController');
@@ -259,7 +261,10 @@ router.get(
   '/:idUser',
   paramValidationRules(),
   validate,
-  exists('idUser', 'Usuario'),
+  verifyResourceExists({
+    routeParam: 'idUser',
+    model: 'Usuario'
+  }),
   getUserFromId
 );
 
@@ -467,7 +472,7 @@ router.get(
   verifyUserIsActive,
   idValidation(),
   validate,
-  exists('idUser', 'Usuario'),
+  verifyResourceExists({ routeParam: 'idUser', model: 'Usuario' }),
   getUserStats,
 )
 

@@ -20,7 +20,7 @@ const isUsuarioAssignedToIndicador = async (idUsuario, idIndicador) => {
         {
           model: Usuario,
           where: {
-            activo: 'SI',
+            activo: true,
           },
           attributes: []
         },

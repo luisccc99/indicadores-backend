@@ -7,7 +7,6 @@ const sinon = require('sinon');
 
 const { expect } = chai;
 const { Indicador, Historico } = require('../../models');
-const { server } = require('../../../app');
 const { anIndicador, indicadorToCreate, aFormula, aVariable, anHistorico, aMapa } = require('../../utils/factories');
 const IndicadorService = require('../../services/indicadorService');
 const { FRONT_PATH, SITE_PATH } = require('../../middlewares/determinePathway');
@@ -18,10 +17,6 @@ describe('Indicador service', function () {
 
   this.afterEach(function () {
     sinon.restore();
-  });
-
-  this.afterAll(function () {
-    server.close();
   });
 
   describe('Read operations', function () {

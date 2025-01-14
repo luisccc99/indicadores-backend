@@ -34,7 +34,7 @@ const { uploadImage } = require('../middlewares/fileUpload');
 const { getCatalogosFromIndicador, updateOrCreateCatalogFromIndicador } = require('../controllers/catalogoController');
 const { DESTINATIONS } = require('../services/fileService');
 const { getFormulaOfIndicador, createFormula } = require('../controllers/formulaController');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const { createFormulaValidationRules } = require('../middlewares/validator/formulaValidator');
 const { createRelationUI } = require('../controllers/usuarioIndicadorController');
 const { getInformation } = require('../controllers/generalController');
@@ -213,7 +213,11 @@ const router = promisedRouter()
 router.get('/:idIndicador',
   idValidation(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador',
+    isActivo: true
+  }),
   getPublicIndicador
 );
 
@@ -243,7 +247,11 @@ router.get('/:idIndicador',
 router.get('/:idIndicador/usuarios',
   paramValidationRules(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador',
+    isActivo: true
+  }),
   getUsersFromIndicador
 )
 
@@ -274,7 +282,11 @@ router.get('/:idIndicador/usuarios',
 router.get('/:idIndicador/mapa',
   idValidation(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador',
+    isActivo: true
+  }),
   getMapaOfIndicador
 );
 
@@ -320,6 +332,11 @@ router.get('/:idIndicador/historicos',
   sortValidationRules(),
   idValidation(),
   validate,
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador',
+    isActivo: true
+  }),
   getHistoricos
 );
 
@@ -361,7 +378,11 @@ router.get('/:idIndicador/historicos',
 router.get('/:idIndicador/formula',
   paramValidationRules(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador',
+    isActivo: true
+  }),
   getFormulaOfIndicador
 )
 
@@ -403,7 +424,10 @@ router.patch('/:idIndicador/toggle-status',
   paramValidationRules(),
   validate,
   verifyUserHasRoles(['ADMIN']),
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   updateIndicadorStatus
 );
 
@@ -556,7 +580,10 @@ router.patch('/:idIndicador',
   updateIndicadorValidationRules(),
   validate,
   verifyUserHasRoles(['ADMIN', 'USER']),
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
   updateIndicador
 );
@@ -600,7 +627,10 @@ router.post('/:idIndicador/formula',
   createFormulaValidationRules(),
   validate,
   verifyUserHasRoles(['ADMIN', 'USER']),
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
   createFormula
 )
@@ -644,7 +674,10 @@ router.post('/:idIndicador/mapa',
   uploadImage(DESTINATIONS.MAPAS),
   mapaValidationRules(),
   validate,
-  exists('idIndicador', 'Indicador'),
+  verifyResourceExists({
+    routeParam: 'idIndicador',
+    model: 'Indicador'
+  }),
   verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
   createMapa
 );
@@ -754,47 +787,6 @@ router.post('/:idIndicador/historicos',
   verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
   createHistorico
 );
-
-
-/**
- * @swagger
- *   /indicadores/{idIndicador/catalogos}:
- *     patch:
- *       summary: Update or create catalogo for an indicador
- *       tags: [Indicadores, Catalogos]
- *       security:
- *         - bearer: []
- *       parameters:
- *         - name: idIndicador
- *           in: path
- *           required: true
- *           description: The id of the indicador
- *           schema:
- *             type: integer
- *             format: int64
- *             minimum: 1
- *       responses:
- *         204:
- *           description: Operation (whether is update or create catalogo) was successful
- *         401:
- *           $ref: '#/components/responses/Unauthorized'
- *         403:
- *           $ref: '#/components/responses/Forbidden'
- *         422:
- *           $ref: '#/components/responses/UnprocessableEntity'
- *         429:
- *           $ref: '#/components/responses/TooManyRequests'
- *         500:
- *           $ref: '#/components/responses/InternalServerError'
- */
-router.patch('/:idIndicador/catalogo',
-  idValidation(),
-  updateIndicadorCatalogos(),
-  validate,
-  verifyUserHasRoles(['ADMIN', 'USER']),
-  verifyUserCanPerformActionOnIndicador({ indicadorPathId: 'idIndicador' }),
-  updateOrCreateCatalogFromIndicador,
-)
 
 
 router.post('/:idIndicador/objetivos/status',

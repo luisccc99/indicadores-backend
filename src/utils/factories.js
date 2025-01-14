@@ -1,14 +1,13 @@
-const faker = require('faker');
-const { Tema, Indicador, Objetivo, CatalogoDetail } = require('../models')
-
+const { faker } = require('@faker-js/faker');
+const { Tema, Indicador, Objetivo } = require('../models')
 
 const aDummyWithName = (id) => ({
 	id,
-	nombre: faker.random.word()
+	nombre: faker.word.sample()
 });
 
-const aCodigo = () => `${faker.datatype.number(9)}${faker.datatype.number(9)}${faker.datatype.number(9)}`;
-const randomYear = () => faker.datatype.number({ 'min': 2000, 'max': new Date().getFullYear() });
+const aCodigo = () => `${faker.number.int(9)}${faker.number.int(9)}${faker.number.int(9)}`;
+const randomYear = () => faker.number.int({ 'min': 2000, 'max': new Date().getFullYear() });
 
 const anIndicador = (id, options) => {
 	let temaInteres = options?.temaInteres;
@@ -16,22 +15,22 @@ const anIndicador = (id, options) => {
 		temaInteres = aTema(1)
 	}
 	const indicador = Indicador.build({
-		id: id || faker.datatype.number(100),
-		urlImagen: faker.image.imageUrl(),
+		id: id || faker.number.int(100),
+		urlImagen: faker.image.url(),
 		codigo: aCodigo(),
-		nombre: `Indicador ${faker.random.word()}`,
+		nombre: `Indicador ${faker.word.sample()}`,
 		definicion: faker.lorem.sentence(),
-		ultimoValorDisponible: faker.datatype.number(),
+		ultimoValorDisponible: faker.number.int(),
 		anioUltimoValorDisponible: randomYear(),
 		tendenciaActual: faker.datatype.boolean() ? "ASCENDENTE" : "DESCENDENTE",
 		tendenciaDeseada: faker.datatype.boolean() ? "ASCENDENTE" : "DESCENDENTE",
 		observaciones: faker.lorem.sentence(),
-		createdBy: faker.datatype.number(9),
-		updatedBy: faker.datatype.number(9),
+		createdBy: faker.number.int(9),
+		updatedBy: faker.number.int(9),
 		activo: faker.datatype.boolean(),
 		fuente: faker.lorem.sentence(),
-		periodicidad: faker.datatype.number(12),
-		owner: faker.datatype.number(9),
+		periodicidad: faker.number.int(12),
+		owner: faker.number.int(9),
 		archive: faker.datatype.boolean(),
 		updatedAt: new Date(),
 		createdAt: new Date(),
@@ -39,31 +38,27 @@ const anIndicador = (id, options) => {
 		Tema: temaInteres,
 		objetivo: null,
 	}, {
-		include: [Tema, Objetivo, { model: CatalogoDetail, as: 'catalogos' }]
+		include: [Tema, { model: Objetivo, as: 'objetivos' }]
 	})
 	indicador.validate()
 	return indicador;
 }
 
+
 // TODO: take into account express-validator rules
-const indicadorToCreate = () => {
-	const indicador = Indicador.build({
-		id: faker.datatype.number(),
-		nombre: faker.random.word(),
-		codigo: aCodigo(),
-		definicion: faker.lorem.sentence(),
-		ultimoValorDisponible: faker.datatype.number(),
-		anioUltimoValorDisponible: randomYear(),
-		periodicidad: faker.datatype.number({ min: 1, max: 120 }),
-		tendenciaActual: faker.datatype.boolean() ? "ASCENDENTE" : "DESCENDENTE",
-		observaciones: faker.random.words(10),
-		fuente: faker.internet.url(),
-		urlImagen: faker.image.avatar(),
-		idObjetivo: 1,
-		idTema: 1
-	});
-	return indicador.dataValues;
-}
+const indicadorToCreate = () => ({
+	nombre: faker.word.sample(),
+	definicion: faker.lorem.sentence(),
+	ultimoValorDisponible: faker.number.int({ min: -1231, max: 2911 }),
+	anioUltimoValorDisponible: faker.date.past().getFullYear(),
+	periodicidad: faker.number.int({ min: 1, max: 48 }),
+	tendenciaActual: faker.datatype.boolean() ? "ASCENDENTE" : "DESCENDENTE",
+	observaciones: faker.word.sample(10),
+	fuente: faker.internet.url(),
+	urlImagen: faker.image.avatar(),
+	idObjetivo: 1,
+	idTema: 1
+})
 
 const aFormula = (id) => ({
 	...(id && { id }),
@@ -75,44 +70,43 @@ const aVariable = (id) => ({
 	...(id && { id }),
 	nombre: faker.lorem.word(),
 	descripcion: faker.lorem.word(),
-	dato: faker.datatype.number(),
+	dato: faker.number.int(),
 	anio: randomYear(),
 	idUnidad: 1
 });
 
 const anHistorico = () => ({
 	anio: randomYear(),
-	valor: faker.datatype.number(),
-	fuente: faker.random.word()
+	valor: faker.number.int(),
+	fuente: faker.word.sample()
 });
 
 const aMapa = (id) => ({
 	...(id && { id }),
-	ubicacion: faker.random.word(),
+	ubicacion: faker.word.sample(),
 	url: faker.internet.url(),
-	urlImagen: faker.image.imageUrl()
+	urlImagen: faker.image.url()
 });
 
 const aUser = (id) => ({
-	id,
-	nombres: faker.name.firstName(),
-	apellidoPaterno: faker.name.lastName(),
-	apellidoMaterno: faker.name.lastName(),
+	...(id !== undefined && { id }),
+	nombres: faker.person.firstName(),
+	apellidoPaterno: faker.person.lastName(),
+	apellidoMaterno: faker.person.lastName(),
 	correo: faker.internet.email(),
 	clave: faker.internet.password(8, false),
-	activo: 'SI',
-	idRol: 1,
-	requestedPasswordChange: id % 2 === 0 ? 'SI' : 'NO',
+	activo: true,
+	requestedPasswordChange: id % 2 === 0,
 });
 
 const aTema = (id) => {
 	const tema = Tema.build({
 		id,
 		codigo: aCodigo(),
-		temaIndicador: faker.company.bsNoun(),
+		temaIndicador: faker.company.buzzNoun(),
 		observaciones: faker.lorem.words(20),
 		activo: faker.datatype.boolean(),
-		urlImagen: faker.image.imageUrl(),
+		urlImagen: faker.image.url(),
 		color: '#ffffff',
 		descripcion: faker.lorem.paragraph(),
 	});
@@ -122,7 +116,7 @@ const aTema = (id) => {
 
 const aRol = (id) => ({
 	id,
-	rol: faker.random.word().toUpperCase(),
+	rol: faker.word.sample().toUpperCase(),
 	descripcion: faker.lorem.words(8),
 	activo: faker.datatype.boolean ? 'SI' : 'NO',
 	createdAt: new Date(),
@@ -155,7 +149,7 @@ const someCatalogos = (id) => ([
 const someCatalogosDetails = (id, idCatalogo) => ([
 	{
 		id,
-		nombre: faker.random.word(),
+		nombre: faker.word.sample(),
 		idCatalogo,
 		createdAt: new Date(),
 		updatedAt: new Date()
@@ -189,9 +183,9 @@ const someCatalogosFromIndicador = (idIndicador) => ([
 const someHistoricos = (idIndicador) => ([
 	{
 		id: 1,
-		valor: faker.datatype.number(),
+		valor: faker.number.int(),
 		anio: 2022,
-		fuente: faker.random.word(),
+		fuente: faker.word.sample(),
 		idIndicador: idIndicador,
 		createdAt: new Date(),
 		ecuacion: 'No aplica',
@@ -199,9 +193,9 @@ const someHistoricos = (idIndicador) => ([
 	},
 	{
 		id: 2,
-		valor: faker.datatype.number(),
+		valor: faker.number.int(),
 		anio: 2021,
-		fuente: faker.random.word(),
+		fuente: faker.word.sample(),
 		idIndicador: idIndicador,
 		createdAt: new Date(),
 		ecuacion: 'No aplica',
@@ -209,9 +203,9 @@ const someHistoricos = (idIndicador) => ([
 	},
 	{
 		id: 3,
-		valor: faker.datatype.number(),
+		valor: faker.number.int(),
 		anio: 2020,
-		fuente: faker.random.word(),
+		fuente: faker.word.sample(),
 		idIndicador: idIndicador,
 		createdAt: new Date(),
 		ecuacion: 'No aplica',
@@ -222,24 +216,24 @@ const someHistoricos = (idIndicador) => ([
 const relationInfo = () => ([
 	{
 		id: 1,
-		nombre: faker.random.word(),
-		owner: faker.random.word(),
+		nombre: faker.word.sample(),
+		owner: faker.word.sample(),
 		updatedAt: new Date(),
-		count: faker.datatype.number(),
+		count: faker.number.int(),
 	},
 	{
 		id: 2,
-		nombre: faker.random.word(),
-		owner: faker.random.word(),
+		nombre: faker.word.sample(),
+		owner: faker.word.sample(),
 		updatedAt: new Date(),
-		count: faker.datatype.number(),
+		count: faker.number.int(),
 	},
 	{
 		id: 3,
-		nombre: faker.random.word(),
-		owner: faker.random.word(),
+		nombre: faker.word.sample(),
+		owner: faker.word.sample(),
 		updatedAt: new Date(),
-		count: faker.datatype.number(),
+		count: faker.number.int(),
 	},
 ]);
 
@@ -252,9 +246,9 @@ const usersToIndicador = () => ([
 		expires: 'SI',
 		createdBy: 1,
 		usuario: {
-			nombres: faker.name.firstName(),
-			apellidoPaterno: faker.name.lastName(),
-			apellidoMaterno: faker.name.lastName(),
+			nombres: faker.person.firstName(),
+			apellidoPaterno: faker.person.lastName(),
+			apellidoMaterno: faker.person.lastName(),
 		}
 	},
 	{
@@ -265,9 +259,9 @@ const usersToIndicador = () => ([
 		expires: 'NO',
 		createdBy: 1,
 		usuario: {
-			nombres: faker.name.firstName(),
-			apellidoPaterno: faker.name.lastName(),
-			apellidoMaterno: faker.name.lastName(),
+			nombres: faker.person.firstName(),
+			apellidoPaterno: faker.person.lastName(),
+			apellidoMaterno: faker.person.lastName(),
 		}
 	},
 	{
@@ -278,9 +272,9 @@ const usersToIndicador = () => ([
 		expires: 'SI',
 		createdBy: 1,
 		usuario: {
-			nombres: faker.name.firstName(),
-			apellidoPaterno: faker.name.lastName(),
-			apellidoMaterno: faker.name.lastName(),
+			nombres: faker.person.firstName(),
+			apellidoPaterno: faker.person.lastName(),
+			apellidoMaterno: faker.person.lastName(),
 		}
 	}
 ]);
@@ -289,7 +283,7 @@ const anObjetivo = (id) => ({
 	id,
 	titulo: faker.lorem.words(Math.floor(Math.random() * 10) + 1),
 	descripcion: faker.lorem.sentence(),
-	urlImagen: faker.image.imageUrl(),
+	urlImagen: faker.image.url(),
 	color: faker.internet.color(),
 	createdAt: new Date(),
 	updatedAt: new Date()

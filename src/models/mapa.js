@@ -37,6 +37,15 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: true
             },
+
+            idIndicador: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'Indicador',
+                    key: 'id'
+                }
+            },
         },
         {
             sequelize,

@@ -6,7 +6,6 @@ const sinon = require('sinon');
 const { expect } = chai;
 const { UsuarioIndicador } = require('../../models');
 const UsuarioIndicadorService = require('../../services/usuarioIndicadorService');
-const { server } = require('../../../app');
 const { relationInfo, usersToIndicador } = require('../../utils/factories');
 
 describe('Usuario-Indicador service', function () {
@@ -15,10 +14,6 @@ describe('Usuario-Indicador service', function () {
   const userToIndicador = usersToIndicador();
   this.afterEach(function () {
     sinon.restore();
-  });
-
-  this.afterAll(function () {
-    server.close();
   });
 
   describe('Read operations', () => {

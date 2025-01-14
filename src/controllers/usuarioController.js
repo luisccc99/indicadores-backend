@@ -20,7 +20,6 @@ const getUsers = async (req, res, next) => {
 
   try {
     const { usuarios, total } = await getUsuarios(perPage, (page - 1) * perPage, searchQuery, activo);
-    const totalInactivos = await countInactiveUsers();
     const totalPages = Math.ceil(total / perPage);
 
     return res.status(200).json({
@@ -28,8 +27,7 @@ const getUsers = async (req, res, next) => {
       perPage,
       total,
       totalPages,
-      totalInactivos,
-      data: [...usuarios]
+      data: usuarios
     });
   } catch (err) {
     next(err)
@@ -40,27 +38,22 @@ const createUser = async (req, res, next) => {
   const { clave, ...values } = req.matchedData;
   const image = getImagePathLocation(req);
 
-  try {
-    if (await isCorreoAlreadyInUse(values.correo)) {
-      return res.status(409).json({ status: 409, message: 'Email is already in use' })
-    }
-    const hashedClave = await hashClave(clave);
-    const savedUser = await addUsuario({
-      ...values,
-      clave: hashedClave,
-      ...image,
-    });
-    return res.status(201).json({ data: savedUser });
-  } catch (err) {
-    next(err)
+  if (await isCorreoAlreadyInUse(values.correo)) {
+    return res.status(409).json({ status: 409, message: 'Email is already in use' })
   }
+
+  const hashedClave = await hashClave(clave);
+
+  const savedUser = await addUsuario({
+    ...values,
+    clave: hashedClave,
+    ...image,
+  });
+
+  return res.status(201).json({ data: savedUser });
 }
 
-/**
- * Edit user in the next scenarios:
- *   - Users update their profile
- *   - Admin wants to edit another user's info
- */
+
 const editUser = async (req, res, next) => {
   const idFromToken = req.sub;
   const { idUser } = req.params;
@@ -68,14 +61,8 @@ const editUser = async (req, res, next) => {
   const id = idUser ? idUser : idFromToken;
   const image = getImagePathLocation(req);
 
-  try {
-    if (await updateUsuario(id, { ...values, ...image })) {
-      return res.sendStatus(204);
-    }
-    return res.sendStatus(400);
-  } catch (err) {
-    next(err)
-  }
+  await updateUsuario(id, { ...values, ...image })
+  return res.sendStatus(204);
 }
 
 const editUserStatus = async (req, res, next) => {

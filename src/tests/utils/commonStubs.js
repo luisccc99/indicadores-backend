@@ -1,5 +1,5 @@
-const faker = require("faker");
-const { aTema, anIndicador, aVariable } = require("../../utils/factories");
+const { faker } = require("@faker-js/faker");
+const { aTema, anIndicador, aVariable, indicadorToCreate } = require("../../utils/factories");
 
 const stubExistsMiddleware = (stub, options) => {
     let exists = options?.exists;
@@ -85,14 +85,14 @@ const stubverifyUserCanPerformActionOnIndicador = (stub, options) => {
  */
 const getIndicadorDTO = () => {
     const fd = new FormData()
-    const { nombre, codigo, definicion, ultimoValorDisponible, anioUltimoValorDisponible, periodicidad } = anIndicador();
+    const { nombre, codigo, definicion, ultimoValorDisponible, anioUltimoValorDisponible, periodicidad } = indicadorToCreate()
     fd.append('nombre', nombre);
     fd.append('codigo', codigo);
     fd.append('definicion', definicion);
     fd.append('ultimoValorDisponible', ultimoValorDisponible);
     fd.append('anioUltimoValorDisponible', -10);
     fd.append('periodicidad', periodicidad);
-    fd.append('idTema', faker.datatype.number(10));
+    fd.append('idTema', faker.number.int(10));
 
     const idTema = 1;
     const formula = aTema()

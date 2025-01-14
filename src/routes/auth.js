@@ -1,12 +1,12 @@
-const express = require('express');
-const { body } = require('express-validator');
-
-const router = express.Router();
+const { body, param } = require('express-validator');
+const promisedRouter = require('express-promise-router')
 const { login, generatePasswordRecoveryToken, handlePasswordRecoveryToken } = require('../controllers/authController');
 const { loginValidationRules, tokenValidationRules } = require('../middlewares/validator/authValidator');
 const {
   validate,
 } = require('../middlewares/validator/generalValidator');
+
+const router = promisedRouter()
 
 /**
  * @swagger
@@ -233,8 +233,10 @@ router.post('/password-reset',
  *         500:
  *           $ref: '#/components/responses/InternalServerError'
  */
-router.patch('/password-reset/:token?',
+router.patch('/password-reset/:token',
   tokenValidationRules(),
+  body('clave').notEmpty(),
+  param('token').notEmpty().isJWT(),
   validate,
   handlePasswordRecoveryToken)
 

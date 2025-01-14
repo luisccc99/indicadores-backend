@@ -15,7 +15,7 @@ const {
 } = require('../controllers/historicoController');
 
 const { verifyJWT, verifyUserIsActive, verifyUserHasRoles } = require('../middlewares/auth');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const { verifyUserCanPerformActionOnIndicador } = require('../middlewares/verifyUserCanPerformAction');
 
 
@@ -65,7 +65,10 @@ router.use(verifyUserHasRoles(['USER', 'ADMIN']))
 router.delete('/:idHistorico',
 	paramValidationRules(),
 	validate,
-	exists('idHistorico', 'Historico'),
+	verifyResourceExists({
+		routeParam: 'idHistorico',
+		model: 'Historico'
+	}),
 	verifyUserCanPerformActionOnIndicador({ relatedTo: { model: 'Historico', pathId: 'idHistorico' } }),
 	deleteHistorico
 );
@@ -113,7 +116,10 @@ router.patch('/:idHistorico',
 	updateHistoricoValidationRules(),
 	paramValidationRules(),
 	validate,
-	exists('idHistorico', 'Historico'),
+	verifyResourceExists({
+		routeParam: 'idHistorico',
+		model: 'Historico'
+	}),
 	verifyUserCanPerformActionOnIndicador({ relatedTo: { model: 'Historico', pathId: 'idHistorico' } }),
 	updateHistorico
 );

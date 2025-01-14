@@ -64,9 +64,11 @@ app.use(helmet({
 }));
 
 // Log HTTP requests with Morgan and Winston
-app.use(morgan(':method :url :status :response-time ms - :res[content-length]', {
-  stream: { write: message => logger.http(message.trim()) }
-}));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan(':method :url :status :response-time ms - :res[content-length]', {
+    stream: { write: message => logger.http(message.trim()) }
+  }));
+}
 
 // Parse data from requests
 app.use(express.json());
@@ -81,7 +83,6 @@ app.use('/api/v1/usuarios', require('./src/routes/usuarios'));
 app.use('/api/v1/roles', require('./src/routes/roles'));
 app.use('/api/v1/temas', require('./src/routes/temas'));
 app.use('/api/v1/indicadores', require('./src/routes/indicadores'));
-app.use('/api/v1/catalogos', require('./src/routes/catalogos'));
 app.use('/api/v1/documentos', require('./src/routes/documentos'));
 app.use('/api/v1/me', require('./src/routes/me'));
 app.use('/api/v1/historicos', require('./src/routes/historicos'));
@@ -107,8 +108,4 @@ app.use(logErrors)
 
 // scheduler();
 
-const server = app.listen(PORT, () => logger.info(`App starting on port ${PORT}`));
-
-
-
-module.exports = { server, app };
+module.exports = { app };

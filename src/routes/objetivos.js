@@ -5,7 +5,7 @@ const { verifyJWT, verifyUserIsActive, verifyUserHasRoles } = require('../middle
 const { uploadImage } = require('../middlewares/fileUpload');
 const { DESTINATIONS } = require('../services/fileService');
 const { updateObjetivoalidationRules } = require('../middlewares/validator/objetivoValidator');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 
 const { getIndicadores, getIndicadoresOfObjetivo } = require('../controllers/indicadorController');
 const {
@@ -62,7 +62,10 @@ router.patch('/:idObjetivo',
     uploadImage(DESTINATIONS.OBJETIVOS),
     updateObjetivoalidationRules(),
     validate,
-    exists('idObjetivo', 'Objetivo'),
+    verifyResourceExists({
+        routeParam: 'idObjetivo',
+        model: 'Objetivo'
+    }),
     editObjetivo
 );
 

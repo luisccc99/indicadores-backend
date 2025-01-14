@@ -28,8 +28,8 @@ const registerValidationRules = () => [
 
     body('activo')
         .optional()
-        .toUpperCase()
-        .isIn(['SI', 'NO'])
+        .isBoolean()
+        .toBoolean()
         .withMessage('estado invalido'),
 
     body('idRol')
@@ -66,8 +66,8 @@ const updateValidationRules = () => [
 
     body('activo')
         .optional()
-        .toUpperCase()
-        .isIn(['SI', 'NO'])
+        .isBoolean()
+        .toBoolean()
         .withMessage('estado invalido'),
 
     body('descripcion')
@@ -82,7 +82,7 @@ const updateProfileValidationRules = () => [
         .isEmail()
         .withMessage('El correo tiene un formato incorrecto'),
 
-    body(['nombres', 'apellidoPaterno', 'apellidoMaterno',  'descripcion'])
+    body(['nombres', 'apellidoPaterno', 'apellidoMaterno', 'descripcion'])
         .optional()
         .isAlpha('es-ES', { ignore: '\s' })
         .withMessage('Valor invalido'),

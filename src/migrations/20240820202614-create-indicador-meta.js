@@ -54,6 +54,8 @@ module.exports = {
         transaction: t
       });
 
+      await t.commit()
+
     } catch (err) {
       console.error(err);
       await t.rollback();

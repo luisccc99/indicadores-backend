@@ -2,6 +2,17 @@ const nodemailer = require('nodemailer');
 const fs = require("fs");
 const templateHtml = fs.readFileSync("./src/templates/email.html", "utf8");
 const handlebars = require('handlebars');
+const logger = require('../config/logger');
+
+const transport = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: parseInt(process.env.SMTP_PORT) === 465,
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
 
 const sendEmail = async (user, text) => {
     const recoverURL = `http://localhost:3500/recuperacion-de-cuenta/${text}`;
@@ -10,35 +21,25 @@ const sendEmail = async (user, text) => {
     const template = handlebars.compile(templateHtml);
     const html = template({ nombres, recoverURL, todaysDate, allowProtoPropertiesByDefault: true });
     const plainText = `¿No puede visualizar el contenido? Visite el siguiente hipervinculo para reiniciar la contraseña: ${recoverURL}`;
-    //TODO: REPLACE WITH PERSONAL EMAIL ACCOUNT
-    //TODO: REPLACE WITH PERSONAL SMTP SERVER
-    let transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-            user: 'stephanie.kertzmann87@ethereal.email', // generated ethereal user
-            pass: 'xwAbZtaWTw3rMeNxn7', // generated ethereal password
-        },
-    });
-
-    let info = await transporter.sendMail({
-        from: '"John Doe 👻"',
-        to: user.correo,
-        subject: 'Password Recovery',
-        text: plainText,
-        html: html,
-        attachments: [{
-            filename: 'logo.jpg',
-            path: './src/templates/logo.jpg',
-            cid: 'cid:logo',
-        }],
-        date: new Date(),
-    });
-
-    return info ? true : false;
+    
+    try {
+        await transport.sendMail({
+            from: '"John Doe 👻"',
+            to: user.correo,
+            subject: 'Recuperación de contraseña',
+            text: plainText,
+            html,
+            attachments: [{
+                filename: 'logo.jpg',
+                path: './src/templates/logo.jpg',
+                cid: 'cid:logo',
+            }],
+            date: new Date(),
+        });
+    } catch (err) {
+        logger.error(err);
+        throw new Error(`Hubo un problema al enviar el correo: ${err.message}`)
+    }
 };
 
-module.exports = {
-    sendEmail,
-};
+module.exports = { sendEmail };

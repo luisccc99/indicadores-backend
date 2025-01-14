@@ -1,5 +1,5 @@
 "use strict";
-const faker = require("faker");
+const { faker } = require("@faker-js/faker");
 module.exports = {
   async up(queryInterface, Sequelize) {
     const historico = [];

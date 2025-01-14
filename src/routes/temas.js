@@ -21,7 +21,7 @@ const {
 const { verifyJWT, verifyUserIsActive, verifyUserHasRoles } = require('../middlewares/auth');
 const { uploadImage } = require('../middlewares/fileUpload');
 const { determinePathway, SITE_PATH, determineModel } = require('../middlewares/determinePathway');
-const { exists } = require('../middlewares/resourceExists');
+const { verifyResourceExists } = require('../middlewares/resourceExists');
 const { DESTINATIONS } = require('../services/fileService');
 const { getInformation } = require('../controllers/generalController');
 
@@ -201,7 +201,6 @@ temaRouter.route('/')
  *           $ref: '#/components/responses/InternalServerError'
  *
  */
-// TODO: Validate tema is active
 indicadorRouter.route('/')
     .get(
         paramValidationRules(),
@@ -209,7 +208,7 @@ indicadorRouter.route('/')
         filterIndicadoresValidationRules(),
         sortValidationRules(),
         validate,
-        exists('idTema', 'Tema'),
+        verifyResourceExists({ routeParam: 'idTema', model: 'Tema', activo: true }),
         determinePathway(SITE_PATH),
         getPublicIndicadores
     );
@@ -313,7 +312,7 @@ temaRouter.route('/:idTema')
         uploadImage(DESTINATIONS.TEMASS),
         updateTemaValidationRules(),
         validate,
-        exists('idTema', 'Tema'),
+        verifyResourceExists({ model: 'Tema', routeParam: 'idTema' }),
         editTema
     );
 

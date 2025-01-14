@@ -39,7 +39,7 @@ const getUsuarioById = async (id) => {
                 'requestedPasswordChange',
                 [sequelize.literal('"rol"."id"'), "idRol"],
                 [sequelize.literal('"rol"."rol"'), "roles"],
-                [sequelize.literal('"rol"."activo"'), "activo"],
+                [sequelize.literal('"rol"."activo"'), "isRolActivo"],
             ],
             include: [{
                 model: Rol,
@@ -147,14 +147,14 @@ const getUsuariosByBulk = async (ids) => {
 
 const countInactiveUsers = async () => {
     try {
-        const inactiveCount = await Usuario.count({ where: { activo: 'NO' } });
+        const inactiveCount = await Usuario.count({ where: { activo: false } });
         return inactiveCount;
     } catch (err) {
         throw new Error(`Error al contar usuarios inactivos ${err.message}`);
     }
 }
 
-// returns true if usuario was updated
+
 const updateUsuario = async (id, fieldsWithImage) => {
     try {
         const affectedRows = await Usuario.update(
@@ -162,6 +162,7 @@ const updateUsuario = async (id, fieldsWithImage) => {
             { where: { id } });
         return affectedRows > 0;
     } catch (err) {
+        logger.error(err.stack)
         throw new Error(`Error al actualizar usuario: ${err.message}`);
     }
 };
@@ -193,7 +194,7 @@ const getIndicadoresFromUser = async (id) => {
             attributes: [],
             where: {
                 id,
-                activo: 'SI'
+                activo: true
             },
             include: {
                 model: Indicador,
@@ -218,7 +219,7 @@ const getIndicadoresFromUser = async (id) => {
 const toggleStatus = async (id) => {
     try {
         const usuario = await Usuario.findOne({ where: { id }, attributes: ['activo'] });
-        const nuevoEstado = usuario.activo === 'SI' ? 'NO' : 'SI';
+        const nuevoEstado = usuario.activo ? false : true;
 
         const updateUsuario = await Usuario.update(
             { activo: nuevoEstado },
@@ -240,19 +241,18 @@ const updateUserPassword = async (id, password) => {
     }
 };
 
-const updateUserPasswordStatus = async (id) => {
+const toggleUsuarioRequestPasswordChange = async (id) => {
     try {
-        const actualStatus = await Usuario.findOne({
+        const { requestedPasswordChange: currentStatus } = await Usuario.findOne({
             attributes: ['requestedPasswordChange'],
             where: { id }
         });
-        const newStatus = actualStatus.requestedPasswordChange === 'SI' ? 'NO' : 'SI';
         const affectedRows = await Usuario.update(
-            { requestedPasswordChange: newStatus },
+            { requestedPasswordChange: !currentStatus },
             { where: { id } });
         return affectedRows > 0;
     } catch (err) {
-        throw new Error(`Error al actualizar contraseña: ${err.message}`);
+        throw new Error(`Error al solicitar actualización de clave: ${err.message}`);
     }
 };
 
@@ -263,7 +263,7 @@ const isUserActive = async (id) => {
             where: { id },
             raw: true
         });
-        return status?.activo === 'SI';
+        return status?.activo;
     } catch (err) {
         throw new Error(`Error al obtener estado de usuario ${err.message}`);
     }
@@ -287,7 +287,7 @@ const getUserStatsInfo = async (id) => {
         const usuariosCount = await Usuario.count({});
         const usuariosInactivosCount = await Usuario.count({
             where: {
-                activo: 'NO'
+                activo: false
             }
         });
 
@@ -343,7 +343,7 @@ module.exports = {
     getIndicadoresFromUser,
     countInactiveUsers,
     updateUserPassword,
-    updateUserPasswordStatus,
+    toggleUsuarioRequestPasswordChange,
     isUserActive,
     getUserStatsInfo,
     getUsersFromIndicador,
