@@ -160,8 +160,8 @@ router.get(
   verifyUserIsActive,
   verifyUserHasRoles(['ADMIN', 'USER']),
   paginationValidationRules(),
-  query('searchQuery'),
-  query('activo'),
+  query('searchQuery').optional().trim(),
+  query('activo').optional().isBoolean().toBoolean(),
   validate,
   getUsers
 );
