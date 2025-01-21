@@ -109,7 +109,6 @@ const changeOwner = async (idUsuario, idIndicador, updatedBy) => {
       });
 
       const alreadyAssigned = await UsuarioIndicador.findOne({ where: { idUsuario, idIndicador }, raw: true });
-
       if (alreadyAssigned) {
         await UsuarioIndicador.update({ isOwner: true, updatedBy }, { where: { id: alreadyAssigned.id } });
         return;
@@ -123,6 +122,7 @@ const changeOwner = async (idUsuario, idIndicador, updatedBy) => {
         createdBy: updatedBy,
         expires: 'NO',
       });
+      return;
     })
   } catch (err) {
     logger.error(err);
@@ -177,7 +177,7 @@ const getRelationUsers = async (limit, offset, idIndicador) => {
           required: true,
           attributes: ['nombres', 'apellidoPaterno', 'apellidoMaterno'],
           where: {
-            activo: 'SI',
+            activo: true,
           }
         },
         {
@@ -213,7 +213,7 @@ const getUsuariosThatDontHaveIndicador = async (idIndicador) => {
         {
           [Op.notIn]: ids
         },
-        activo: 'SI'
+        activo: true
       },
       attributes: ['id', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'urlImagen'],
     });

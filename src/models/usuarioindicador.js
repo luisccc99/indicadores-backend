@@ -42,6 +42,12 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
             },
 
+            isOwner: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
+
             notified: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
