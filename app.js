@@ -106,6 +106,6 @@ app.use('/uploads/usuarios/images', express.static(path.join(__dirname, 'uploads
 app.use('/uploads/mapas', express.static(path.join(__dirname, 'uploads', 'mapas')));
 app.use(logErrors)
 
-// scheduler();
+scheduler();
 
 module.exports = { app };

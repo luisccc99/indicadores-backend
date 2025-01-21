@@ -47,11 +47,16 @@ const getImagePathLocation = (req) => {
 		image.urlImagen = req?.file?.location;
 	} else if (req.file) {
 		image.urlImagen = `http://${req.headers.host}/${req.file.path}`;
-	} 
+	}
 	if (req.body.urlImagen === 'null') {
 		image.urlImagen = null;
 	}
 	return image;
 };
 
-module.exports = { numberWithCommas, returnUnit, returnFuente, getImagePathLocation }
+const splitNameKeepFirstOne = (name) => {
+	return name.split(' ')[0];
+}
+
+
+module.exports = { numberWithCommas, returnUnit, returnFuente, getImagePathLocation, splitNameKeepFirstOne };

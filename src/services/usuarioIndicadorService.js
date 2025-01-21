@@ -3,6 +3,9 @@ const { where } = require('sequelize');
 const logger = require('../config/logger');
 const { UsuarioIndicador, Usuario, Indicador, sequelize, Sequelize } = require('../models');
 const { getInformation } = require('./generalServices');
+const { splitNameKeepFirstOne } = require('../utils/stringFormat');
+const { differenceInMonths } = require('date-fns');
+const sender = require('../middlewares/mailSender');
 const { Op } = Sequelize;
 
 const isUsuarioAssignedToIndicador = async (idUsuario, idIndicador) => {
@@ -283,6 +286,139 @@ const getModelSelected = async (model, options) => {
   }
 }
 
+const updateNotifiedValue = async (id, value) => {
+  console.log(id[0], value)
+  try {
+    const test = await UsuarioIndicador.update({
+      notified: value,
+      notifiedAt: new Date()
+    }, {
+      where: {
+        id: id[0]
+      }
+    });
+
+    console.log(test);
+    return;
+  }
+  catch (err) {
+    throw new Error(`Error al actualizar la relación: ${err.message}`);
+  }
+};
+
+const needsUpdate = (monthDifference, periodicidad, notified, notifiedAt) => {
+  return monthDifference >= periodicidad && !notified;
+};
+
+
+const checkForUpdates = async () => {
+  const today = new Date();
+
+  const usuarioIndicadores = await UsuarioIndicador.findAll({
+    attributes: ['id', 'idUsuario', 'idIndicador', 'notified', 'notifiedAt'],
+    include: [{
+      model: Indicador,
+      attributes: ['id', 'nombre', 'ultimoValorDisponible', 'anioUltimoValorDisponible', 'updatedBy', 'updatedAt', 'periodicidad', 'fuente'],
+      where: {
+        activo: true,
+      }
+    },
+    {
+      model: Usuario,
+      attributes: ['id', 'nombres', 'correo'],
+      where: {
+        activo: true
+      }
+    }],
+  });
+
+
+  const indicadoresToUpdate = usuarioIndicadores.filter(ui => {
+    const updatedAt = ui.indicador.updatedAt;
+    const periodicidad = ui.indicador.periodicidad;
+    const notified = ui.notified;
+    const notifiedAt = ui.notifiedAt;
+    const months = differenceInMonths(today, updatedAt);
+    return needsUpdate(months, periodicidad, notified, notifiedAt);
+  });
+
+
+  const arrayOfUSers = indicadoresToUpdate.reduce((acc, ui) => {
+    const user = acc.find(u => u.id === ui.idUsuario);
+    if (user) {
+      user.indicadores.push(ui);
+    } else {
+      acc.push({
+        id: ui.idUsuario,
+        nombres: ui.usuario.nombres,
+        correo: ui.usuario.correo,
+        indicadores: [ui]
+      });
+    }
+    return acc;
+  }, []);
+
+  await sendToBeupdatedIndicadores(arrayOfUSers, 5000);
+
+}
+
+const sendToBeupdatedIndicadores = async (users, interval) => {
+  for (const user of users) {
+    const { nombres, correo, indicadores } = user;
+    const indicadoresNames = indicadores.map(i => i.indicador.nombre);
+    const indicadoresAndExpirationDate = indicadores.map(i => {
+      const expirationDate = new Date(i.indicador.updatedAt);
+      expirationDate.setMonth(expirationDate.getMonth() + i.indicador.periodicidad);
+      const mxexpirationDate = expirationDate.toLocaleDateString('es-MX');
+
+      return {
+        nombre: i.indicador.nombre,
+        fechaExpiracion: mxexpirationDate,
+      };
+    });
+    const indicadoresNamesString = indicadoresNames.join(', ');
+    const salutation = splitNameKeepFirstOne(nombres);
+
+
+    // Enviar el correo
+    await sendEmailToUsuarios(nombres, correo, indicadoresNames, indicadoresNamesString, salutation, indicadoresAndExpirationDate);
+
+    updateNotifiedValue(indicadores.map(i => i.id), true);
+
+    // Esperar antes de enviar el siguiente
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+};
+
+const templateFromIndicadoresToBeUpdated = (nombres, indicadoresNamesString, salutation, indicadoresAndExpirationDate) => {
+  return `
+    <h1>Hola ${nombres}!</h1>
+    <p>Este correo es para recordarte que los siguientes indicadores necesitan actualización:</p>
+    <ul>
+        ${indicadoresAndExpirationDate.map(i => {
+    return `<li>${i.nombre} - Fecha de expiración: ${i.fechaExpiracion}</li>`
+  })}
+    </ul>
+    <p>Gracias por tu colaboración!</p>
+    `
+};
+
+const sendEmailToUsuarios = async (nombres, correo, indicadoresNames, indicadoresNamesString, salutation, indicadoresAndExpirationDate) => {
+
+
+  await sender(
+    'miguel.valdez@implanchihuahua.org',
+    'Indicadores pendientes de actualización 🦂',
+    salutation,
+    templateFromIndicadoresToBeUpdated(nombres, indicadoresNamesString, salutation, indicadoresAndExpirationDate)
+  )
+}
+
+
+
+
+
+
 module.exports = {
   isUsuarioAssignedToIndicador,
   createRelation,
@@ -294,5 +430,7 @@ module.exports = {
   createRelationWithModules,
   getModelSelected,
   createRelationUsersToIndicador,
-  changeOwner
+  changeOwner,
+  updateNotifiedValue,
+  checkForUpdates
 }
