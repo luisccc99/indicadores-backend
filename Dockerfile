@@ -1,5 +1,5 @@
-FROM node:lts-alpine3.15 AS base
-RUN apk add --no-cache \
+FROM node:lts-alpine AS base
+RUN apk add --no-cache --virtual \
     chromium \
     nss \
     freetype \
